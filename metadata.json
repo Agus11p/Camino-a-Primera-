@@ -1,0 +1,6 @@
+{
+  "name": "Camino a Primera",
+  "description": "Aplicación de seguimiento, estadísticas y gamificación para futbolistas amateurs y en formación.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
