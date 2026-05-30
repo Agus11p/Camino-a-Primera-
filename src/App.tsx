@@ -23,6 +23,43 @@ import {
 } from 'lucide-react';
 
 export default function App() {
+  // Check if we are inside the OAuth popup handler
+  const isPopup = typeof window !== 'undefined' && window.opener && window.name === 'supabase_oauth_popup';
+
+  useEffect(() => {
+    if (!isPopup || !supabase) return;
+
+    // Listen for auth state change in popup
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        window.opener.postMessage({ type: 'OAUTH_AUTH_SUCCESS', session }, '*');
+        setTimeout(() => {
+          window.close();
+        }, 1000);
+      }
+    });
+
+    // Double-check current session immediately
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        window.opener.postMessage({ type: 'OAUTH_AUTH_SUCCESS', session }, '*');
+        setTimeout(() => {
+          window.close();
+        }, 1000);
+      }
+    });
+
+    // Backup close timer
+    const fallbackTimer = setTimeout(() => {
+      window.close();
+    }, 15000);
+
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(fallbackTimer);
+    };
+  }, [isPopup]);
+
   // 0. Authentication States (Unrespiro/Supabase Style)
   const [sessionUser, setSessionUser] = useState<any | null>(() => {
     const saved = localStorage.getItem('camino_user');
@@ -64,6 +101,75 @@ export default function App() {
       subscription.unsubscribe();
     };
   }, []);
+
+  // Fetch data from Supabase if user is logged in
+  useEffect(() => {
+    if (!supabase || !sessionUser) return;
+
+    const loadUserData = async () => {
+      try {
+        // Load profile
+        const { data: profileData, error: profileErr } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', sessionUser.id)
+          .maybeSingle();
+        
+        if (profileData && !profileErr) {
+          setProfile({
+            nombre: profileData.nombre,
+            club: profileData.club,
+            edad: profileData.edad,
+            peso: profileData.peso,
+            altura: profileData.altura,
+            piernaHabil: profileData.pierna_habil || profileData.piernaHabil,
+            posicion: profileData.posicion,
+            habilidad1: profileData.habilidades?.[0] || 'Velocidad',
+            habilidad2: profileData.habilidades?.[1] || 'Pase',
+            habilidades: profileData.habilidades || []
+          });
+        }
+
+        // Load logs
+        const { data: logsData, error: logsErr } = await supabase
+          .from('logs')
+          .select('*')
+          .eq('user_id', sessionUser.id)
+          .order('timestamp', { ascending: false });
+        
+        if (logsData && !logsErr) {
+          setLogs(logsData.map((l: any) => ({
+            id: l.id,
+            tipo: l.tipo,
+            fecha: l.fecha,
+            goles: l.goles || 0,
+            asistencias: l.asistencias || 0,
+            reflexion: l.reflexion || '',
+            timestamp: l.timestamp || Date.now()
+          })));
+        }
+
+        // Load goals
+        const { data: goalsData, error: goalsErr } = await supabase
+          .from('goals')
+          .select('*')
+          .eq('user_id', sessionUser.id);
+        
+        if (goalsData && !goalsErr) {
+          setGoals(goalsData.map((g: any) => ({
+            id: g.id,
+            texto: g.texto,
+            completado: g.completado,
+            plazo: g.plazo
+          })));
+        }
+      } catch (err) {
+        console.warn('Falló la carga de datos desde Supabase (puede que las tablas no existan aún):', err);
+      }
+    };
+
+    loadUserData();
+  }, [sessionUser]);
 
   // 1. Core Persistent States
   const [profile, setProfile] = useState<PlayerProfile | null>(() => {
@@ -156,36 +262,84 @@ export default function App() {
     localStorage.setItem('camino_is_guest', 'false');
   };
 
-  const handleSaveProfile = (newProfile: PlayerProfile) => {
+  const handleSaveProfile = async (newProfile: PlayerProfile) => {
     setProfile(newProfile);
     setShowSetup(false);
+
+    if (supabase && sessionUser) {
+      try {
+        await supabase.from('profiles').upsert({
+          id: sessionUser.id,
+          nombre: newProfile.nombre,
+          club: newProfile.club,
+          edad: Number(newProfile.edad),
+          peso: Number(newProfile.peso),
+          altura: Number(newProfile.altura),
+          pierna_habil: newProfile.piernaHabil,
+          posicion: newProfile.posicion,
+          habilidades: newProfile.habilidades || [newProfile.habilidad1, newProfile.habilidad2]
+        });
+      } catch (err) {
+        console.warn('No se pudo respaldar el perfil en Supabase (puede faltar crear la tabla):', err);
+      }
+    }
   };
 
-  const handleCreateOrUpdateLog = (newLogData: Omit<ActivityLog, 'id' | 'timestamp'> & { id?: string }) => {
+  const handleCreateOrUpdateLog = async (newLogData: Omit<ActivityLog, 'id' | 'timestamp'> & { id?: string }) => {
+    let targetId = newLogData.id || 'log-' + Math.random().toString(36).substr(2, 9);
+    let targetTimestamp = Date.now();
+
     if (newLogData.id) {
       // Edit mode
       setLogs((prev) =>
-        prev.map((item) =>
-          item.id === newLogData.id
-            ? { ...item, ...newLogData, timestamp: item.timestamp }
-            : item
-        )
+        prev.map((item) => {
+          if (item.id === newLogData.id) {
+            targetTimestamp = item.timestamp;
+            return { ...item, ...newLogData, timestamp: item.timestamp };
+          }
+          return item;
+        })
       );
     } else {
       // Creation mode
       const newLog: ActivityLog = {
         ...newLogData,
-        id: 'log-' + Math.random().toString(36).substr(2, 9),
-        timestamp: Date.now(),
+        id: targetId,
+        timestamp: targetTimestamp,
       };
       setLogs((prev) => [newLog, ...prev]);
     }
+
+    if (supabase && sessionUser) {
+      try {
+        await supabase.from('logs').upsert({
+          id: targetId,
+          user_id: sessionUser.id,
+          tipo: newLogData.tipo,
+          fecha: newLogData.fecha,
+          goles: Number(newLogData.goles || 0),
+          asistencias: Number(newLogData.asistencias || 0),
+          reflexion: newLogData.reflexion || '',
+          timestamp: targetTimestamp
+        });
+      } catch (err) {
+        console.warn('No se pudo respaldar el diario en Supabase:', err);
+      }
+    }
+
     setIsRegisterOpen(false);
     setEditLogTarget(null);
   };
 
-  const handleDeleteLog = (id: string) => {
+  const handleDeleteLog = async (id: string) => {
     setLogs((prev) => prev.filter((log) => log.id !== id));
+    if (supabase && sessionUser) {
+      try {
+        await supabase.from('logs').delete().eq('id', id).eq('user_id', sessionUser.id);
+      } catch (err) {
+        console.warn('No se pudo eliminar de Supabase:', err);
+      }
+    }
   };
 
   const handleEditLogTrigger = (log: ActivityLog) => {
@@ -193,7 +347,7 @@ export default function App() {
     setIsRegisterOpen(true);
   };
 
-  const handleAddDynamicGoal = (texto: string, plazo: 'Corto' | 'Mediano' | 'Largo') => {
+  const handleAddDynamicGoal = async (texto: string, plazo: 'Corto' | 'Mediano' | 'Largo') => {
     const newGoal: DynamicGoal = {
       id: 'goal-' + Math.random().toString(36).substr(2, 9),
       texto,
@@ -201,16 +355,52 @@ export default function App() {
       plazo,
     };
     setGoals((prev) => [newGoal, ...prev]);
+
+    if (supabase && sessionUser) {
+      try {
+        await supabase.from('goals').insert({
+          id: newGoal.id,
+          user_id: sessionUser.id,
+          texto: newGoal.texto,
+          completado: newGoal.completado,
+          plazo: newGoal.plazo
+        });
+      } catch (err) {
+        console.warn('No se pudo añadir meta en Supabase:', err);
+      }
+    }
   };
 
-  const handleToggleGoal = (id: string) => {
+  const handleToggleGoal = async (id: string) => {
+    let nextState = false;
     setGoals((prev) =>
-      prev.map((g) => (g.id === id ? { ...g, completado: !g.completado } : g))
+      prev.map((g) => {
+        if (g.id === id) {
+          nextState = !g.completado;
+          return { ...g, completado: nextState };
+        }
+        return g;
+      })
     );
+
+    if (supabase && sessionUser) {
+      try {
+        await supabase.from('goals').update({ completado: nextState }).eq('id', id).eq('user_id', sessionUser.id);
+      } catch (err) {
+        console.warn('No se pudo guardar estado de meta en Supabase:', err);
+      }
+    }
   };
 
-  const handleDeleteGoal = (id: string) => {
+  const handleDeleteGoal = async (id: string) => {
     setGoals((prev) => prev.filter((g) => g.id !== id));
+    if (supabase && sessionUser) {
+      try {
+        await supabase.from('goals').delete().eq('id', id).eq('user_id', sessionUser.id);
+      } catch (err) {
+        console.warn('No se pudo borrar meta en Supabase:', err);
+      }
+    }
   };
 
   const handleResetApp = () => {
@@ -225,6 +415,18 @@ export default function App() {
       localStorage.clear();
     }
   };
+
+  if (isPopup) {
+    return (
+      <div className="min-h-screen bg-[#070908] text-neutral-200 flex flex-col items-center justify-center p-6 text-center font-sans">
+        <div className="w-10 h-10 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin mb-4" />
+        <h2 className="text-lg font-black tracking-tight text-white mb-2">CONECTANDO CON GOOGLE</h2>
+        <p className="text-xs text-neutral-500 max-w-xs">
+          Autenticando tu cuenta con Supabase de forma segura. Esta ventana se cerrará sola.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-neutral-900">

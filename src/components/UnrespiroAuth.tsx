@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { 
@@ -25,6 +25,30 @@ export default function UnrespiroAuth({ onAuthSuccess }: UnrespiroAuthProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  // Listen for success message from popup (after OAuth callback completes)
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      // Validate origin is from AI Studio preview or localhost
+      const origin = event.origin;
+      if (!origin.endsWith('.run.app') && !origin.includes('localhost')) {
+        return;
+      }
+      if (event.data?.type === 'OAUTH_AUTH_SUCCESS') {
+        if (event.data.session?.user) {
+          onAuthSuccess(event.data.session.user, false);
+        } else if (supabase) {
+          supabase.auth.getSession().then(({ data: { session } }) => {
+            if (session?.user) {
+              onAuthSuccess(session.user, false);
+            }
+          });
+        }
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [onAuthSuccess]);
 
   // Send magical 6-digit OTP code or Magic link
   const handleSendCode = async (e: React.FormEvent) => {
@@ -115,15 +139,32 @@ export default function UnrespiroAuth({ onAuthSuccess }: UnrespiroAuthProps) {
     }
 
     try {
-      const { error } = await supabase!.auth.signInWithOAuth({
+      setLoading(true);
+      const { data, error } = await supabase!.auth.signInWithOAuth({
         provider,
         options: {
           redirectTo: window.location.origin,
+          skipBrowserRedirect: true,
         }
       });
       if (error) throw error;
+
+      if (data?.url) {
+        // Center-aligned popup window
+        const width = 600;
+        const height = 750;
+        const left = window.screen.width / 2 - width / 2;
+        const top = window.screen.height / 2 - height / 2;
+        window.open(
+          data.url,
+          'supabase_oauth_popup',
+          `width=${width},height=${height},left=${left},top=${top},scrollbars=yes,status=no`
+        );
+      }
     } catch (err: any) {
       setError(err.message || `Error al conectar con ${provider}.`);
+    } finally {
+      setLoading(false);
     }
   };
 
