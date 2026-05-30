@@ -22,7 +22,8 @@ export default function SplashWelcome({
       <div className="relative mb-8 group transition-transform duration-300 hover:scale-105">
         <div className="w-28 h-28 rounded-full bg-black border-4 border-white flex items-center justify-center shadow-lg shadow-emerald-500/20">
           <span 
-            className="text-white text-4xl font-extrabold italic tracking-tighter" 
+            translate="no"
+            className="notranslate text-white text-4xl font-extrabold italic tracking-tighter" 
             style={{ fontFamily: '"Arial Black", "Impact", sans-serif' }}
           >
             90+

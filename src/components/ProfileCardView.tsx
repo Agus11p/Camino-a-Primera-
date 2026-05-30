@@ -79,7 +79,7 @@ export default function ProfileCardView({ profile, onEditProfile }: ProfileCardV
           <div className="relative shrink-0 mb-4">
             {/* FIFA Ultimate Team Circle badge preview */}
             <div className="w-20 h-20 sm:w-24 sm:h-24 bg-black border-[6px] border-white rounded-full flex items-center justify-center text-white skew-logo shrink-0 shadow-xl shadow-emerald-500/10 relative">
-              <span className="text-white text-3xl sm:text-4xl font-black italic tracking-tighter">90+</span>
+              <span translate="no" className="notranslate text-white text-3xl sm:text-4xl font-black italic tracking-tighter">90+</span>
             </div>
             <div className="absolute -bottom-1 -right-1 bg-emerald-500 text-neutral-950 w-6.5 h-6.5 rounded-full border border-black flex items-center justify-center text-[10px] font-black shadow-lg">
               {profile.piernaHabil === 'Diestro' ? 'R' : 'L'}

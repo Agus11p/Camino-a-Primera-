@@ -420,9 +420,9 @@ export default function App() {
     return (
       <div className="min-h-screen bg-[#070908] text-neutral-200 flex flex-col items-center justify-center p-6 text-center font-sans">
         <div className="w-10 h-10 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin mb-4" />
-        <h2 className="text-lg font-black tracking-tight text-white mb-2">CONECTANDO CON GOOGLE</h2>
+        <h2 className="text-lg font-black tracking-tight text-white mb-2">CONECTANDO CUENTA</h2>
         <p className="text-xs text-neutral-500 max-w-xs">
-          Autenticando tu cuenta con Supabase de forma segura. Esta ventana se cerrará sola.
+          Autenticando tu sesión de forma segura. Esta ventana se cerrará sola al finalizar.
         </p>
       </div>
     );
@@ -437,7 +437,8 @@ export default function App() {
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-full bg-black border-2 border-white flex items-center justify-center shadow shadow-emerald-500/10 shrink-0">
               <span 
-                className="text-white text-xs font-black italic tracking-tighter" 
+                translate="no"
+                className="notranslate text-white text-xs font-black italic tracking-tighter" 
                 style={{ fontFamily: '"Arial Black", "Impact", sans-serif' }}
               >
                 90+
