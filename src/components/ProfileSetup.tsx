@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'motion/react';
 import { PlayerProfile, PiernaHabil, PosicionTactica, POSICIONES_TACTICAS, HABILIDADES_DISPONIBLES } from '../types';
 import { Shield, Sparkles, User, Info, ArrowLeft } from 'lucide-react';
 
@@ -112,8 +113,22 @@ export default function ProfileSetup({
     });
   };
 
+  const formSectionVariants = {
+    hidden: { opacity: 0, y: 15 },
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      transition: { type: "spring", stiffness: 100, damping: 15 } 
+    }
+  };
+
   return (
-    <div className="w-full max-w-2xl mx-auto px-4 py-8">
+    <motion.div 
+      initial="hidden"
+      animate="visible"
+      transition={{ staggerChildren: 0.08 }}
+      className="w-full max-w-2xl mx-auto px-4 py-8"
+    >
       {/* Upper bar with back if possible */}
       {showBackButton && onBack && (
         <button
@@ -125,7 +140,10 @@ export default function ProfileSetup({
         </button>
       )}
 
-      <div className="flex items-center gap-3.5 mb-8">
+      <motion.div 
+        variants={formSectionVariants}
+        className="flex items-center gap-3.5 mb-8"
+      >
         <div className="p-3 bg-emerald-500/10 text-emerald-400 rounded-xl border border-emerald-500/20">
           <Shield className="w-6 h-6 animate-pulse" />
         </div>
@@ -137,11 +155,14 @@ export default function ProfileSetup({
             Completa tus especificaciones técnicas para generar tu perfil scout.
           </p>
         </div>
-      </div>
+      </motion.div>
 
       <form onSubmit={handleSave} className="space-y-6">
         {/* Core Profile Card */}
-        <div className="glass p-6 space-y-4">
+        <motion.div 
+          variants={formSectionVariants}
+          className="glass p-6 space-y-4"
+        >
           <h2 className="text-sm font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-2">
             <User className="w-4 h-4" />
             Datos Básicos
@@ -251,10 +272,13 @@ export default function ProfileSetup({
               </span>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Technical Attributes Card */}
-        <div className="glass p-6 space-y-5">
+        <motion.div 
+          variants={formSectionVariants}
+          className="glass p-6 space-y-5"
+        >
           <h2 className="text-sm font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-2">
             <Sparkles className="w-4 h-4" />
             Atributos de Cancha
@@ -265,28 +289,32 @@ export default function ProfileSetup({
               Pierna Hábil
             </label>
             <div className="grid grid-cols-2 gap-3">
-              <button
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 type="button"
                 onClick={() => setPiernaHabil('Diestro')}
                 className={`py-3 px-4 rounded-xl text-sm font-bold uppercase transition border ${
                   piernaHabil === 'Diestro'
-                    ? 'bg-emerald-500 border-emerald-500 text-black shadow-lg shadow-emerald-500/20'
+                    ? 'bg-emerald-500 border-emerald-500 text-black shadow-lg shadow-emerald-500/20 font-black'
                     : 'bg-white/5 border-white/10 hover:border-white/20 text-neutral-400 cursor-pointer'
                 }`}
               >
                 Diestro
-              </button>
-              <button
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 type="button"
                 onClick={() => setPiernaHabil('Zurdo')}
                 className={`py-3 px-4 rounded-xl text-sm font-bold uppercase transition border ${
                   piernaHabil === 'Zurdo'
-                    ? 'bg-emerald-500 border-emerald-500 text-black shadow-lg shadow-emerald-500/20'
+                    ? 'bg-emerald-500 border-emerald-500 text-black shadow-lg shadow-emerald-500/20 font-black'
                     : 'bg-white/5 border-white/10 hover:border-white/20 text-neutral-400 cursor-pointer'
                 }`}
               >
                 Zurdo
-              </button>
+              </motion.button>
             </div>
           </div>
 
@@ -298,7 +326,9 @@ export default function ProfileSetup({
             {/* Elegant Segmented Tabs for Categories */}
             <div className="bg-white/5 p-1 rounded-xl border border-white/10 grid grid-cols-4 gap-1 mb-3">
               {Object.keys(CATEGORIAS_POSICION).map((cat) => (
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   key={cat}
                   type="button"
                   onClick={() => setActiveCategory(cat)}
@@ -309,7 +339,7 @@ export default function ProfileSetup({
                   }`}
                 >
                   {cat.split(' ')[1] || cat}
-                </button>
+                </motion.button>
               ))}
             </div>
 
@@ -318,7 +348,9 @@ export default function ProfileSetup({
               {CATEGORIAS_POSICION[activeCategory]?.map((pos) => {
                 const isSelected = posicion === pos;
                 return (
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
                     key={pos}
                     type="button"
                     onClick={() => setPosicion(pos)}
@@ -332,7 +364,7 @@ export default function ProfileSetup({
                     {isSelected && (
                       <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                     )}
-                  </button>
+                  </motion.button>
                 );
               })}
             </div>
@@ -359,7 +391,9 @@ export default function ProfileSetup({
               {HABILIDADES_DISPONIBLES.map((skill) => {
                 const isSelected = habilidades.includes(skill);
                 return (
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     key={skill}
                     type="button"
                     onClick={() => handleToggleHabilidad(skill)}
@@ -370,7 +404,7 @@ export default function ProfileSetup({
                     }`}
                   >
                     {skill}
-                  </button>
+                  </motion.button>
                 );
               })}
             </div>
@@ -381,16 +415,18 @@ export default function ProfileSetup({
               </p>
             )}
           </div>
-        </div>
+        </motion.div>
 
         {/* Save button */}
-        <button
+        <motion.button
+          whileHover={{ scale: 1.01 }}
+          whileTap={{ scale: 0.99 }}
           type="submit"
           className="w-full bg-emerald-500 hover:bg-emerald-400 active:scale-[0.99] text-neutral-950 font-black py-4 px-6 rounded-xl transition duration-200 shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-2 cursor-pointer text-base uppercase"
         >
           {initialProfile ? 'Guardar Cambios' : 'Guardar Ficha de Jugador'}
-        </button>
+        </motion.button>
       </form>
-    </div>
+    </motion.div>
   );
 }

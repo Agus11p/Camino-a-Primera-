@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { PlayerProfile, ActivityLog, DynamicGoal } from './types';
 import SplashWelcome from './components/SplashWelcome';
 import ProfileSetup from './components/ProfileSetup';
@@ -468,78 +469,99 @@ export default function App() {
 
       {/* Main Panel Core Container */}
       <main className="flex-1 w-full max-w-2xl mx-auto px-4 relative">
-        {currentView === 'auth' && (
-          <UnrespiroAuth
-            onAuthSuccess={handleAuthSuccess}
-          />
-        )}
-
-        {currentView === 'welcome' && (
-          <SplashWelcome
-            profile={profile}
-            onEnterDashboard={() => setShowSetup(false)}
-            onStartOnboarding={() => setShowSetup(true)}
-          />
-        )}
-
-        {currentView === 'setup' && (
-          <ProfileSetup
-            initialProfile={profile}
-            onSave={handleSaveProfile}
-            showBackButton={!!profile}
-            onBack={() => setShowSetup(false)}
-          />
-        )}
-
-        {currentView === 'app' && (
-          <div className="pt-4">
-            {activeTab === 'dashboard' && (
-              <Dashboard
-                profile={profile!}
-                logs={logs}
-                goalsGoal={goalsGoal}
-                assistsGoal={assistsGoal}
-                onEditProfile={() => setShowSetup(true)}
-                onOpenRegisterModal={() => {
-                  setEditLogTarget(null);
-                  setIsRegisterOpen(true);
-                }}
-                onUpdateGoalsGoal={setGoalsGoal}
-                onUpdateAssistsGoal={setAssistsGoal}
-                onNavigateToTab={setActiveTab}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentView}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.22, ease: "easeInOut" }}
+            className="w-full h-full"
+          >
+            {currentView === 'auth' && (
+              <UnrespiroAuth
+                onAuthSuccess={handleAuthSuccess}
               />
             )}
 
-            {activeTab === 'goals' && (
-              <GoalsSection
-                goals={goals}
-                logs={logs}
-                onAddGoal={handleAddDynamicGoal}
-                onToggleGoal={handleToggleGoal}
-                onDeleteGoal={handleDeleteGoal}
+            {currentView === 'welcome' && (
+              <SplashWelcome
+                profile={profile}
+                onEnterDashboard={() => setShowSetup(false)}
+                onStartOnboarding={() => setShowSetup(true)}
               />
             )}
 
-            {activeTab === 'charts' && (
-              <StatisticsCharts logs={logs} />
-            )}
-
-            {activeTab === 'history' && (
-              <HistoryFeed
-                logs={logs}
-                onEdit={handleEditLogTrigger}
-                onDelete={handleDeleteLog}
+            {currentView === 'setup' && (
+              <ProfileSetup
+                initialProfile={profile}
+                onSave={handleSaveProfile}
+                showBackButton={!!profile}
+                onBack={() => setShowSetup(false)}
               />
             )}
 
-            {activeTab === 'profile' && (
-              <ProfileCardView
-                profile={profile!}
-                onEditProfile={() => setShowSetup(true)}
-              />
+            {currentView === 'app' && (
+              <div className="pt-4">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={activeTab}
+                    initial={{ opacity: 0, scale: 0.98, y: 8 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.98, y: -8 }}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
+                  >
+                    {activeTab === 'dashboard' && (
+                      <Dashboard
+                        profile={profile!}
+                        logs={logs}
+                        goalsGoal={goalsGoal}
+                        assistsGoal={assistsGoal}
+                        onEditProfile={() => setShowSetup(true)}
+                        onOpenRegisterModal={() => {
+                          setEditLogTarget(null);
+                          setIsRegisterOpen(true);
+                        }}
+                        onUpdateGoalsGoal={setGoalsGoal}
+                        onUpdateAssistsGoal={setAssistsGoal}
+                        onNavigateToTab={setActiveTab}
+                      />
+                    )}
+
+                    {activeTab === 'goals' && (
+                      <GoalsSection
+                        goals={goals}
+                        logs={logs}
+                        onAddGoal={handleAddDynamicGoal}
+                        onToggleGoal={handleToggleGoal}
+                        onDeleteGoal={handleDeleteGoal}
+                      />
+                    )}
+
+                    {activeTab === 'charts' && (
+                      <StatisticsCharts logs={logs} />
+                    )}
+
+                    {activeTab === 'history' && (
+                      <HistoryFeed
+                        logs={logs}
+                        onEdit={handleEditLogTrigger}
+                        onDelete={handleDeleteLog}
+                      />
+                    )}
+
+                    {activeTab === 'profile' && (
+                      <ProfileCardView
+                        profile={profile!}
+                        onEditProfile={() => setShowSetup(true)}
+                      />
+                    )}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
             )}
-          </div>
-        )}
+          </motion.div>
+        </AnimatePresence>
       </main>
 
       {/* Persistent Bottom Tab Shell Bar */}

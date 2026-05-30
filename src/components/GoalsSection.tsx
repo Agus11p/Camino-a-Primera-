@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { DynamicGoal, ActivityLog, BadgeCount } from '../types';
 import { calculateBadges } from '../utils/badgeHelper';
 import { triggerConfetti } from '../utils/confetti';
@@ -55,10 +56,37 @@ export default function GoalsSection({
     return goals.filter((g) => g.plazo === plazo);
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.08
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 15 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { type: "spring", stiffness: 100, damping: 15 }
+    }
+  };
+
   return (
-    <div className="space-y-8 pb-24">
+    <motion.div 
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="space-y-8 pb-24"
+    >
       {/* 1. Medallero Oficial: Premium Golden Badges */}
-      <div className="glass p-6 shadow-xl relative overflow-hidden emerald-glow animate-fade-in">
+      <motion.div 
+        variants={itemVariants}
+        className="glass p-6 shadow-xl relative overflow-hidden emerald-glow"
+      >
         {/* Glow detail */}
         <div className="absolute -top-12 -right-12 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
 
@@ -71,7 +99,7 @@ export default function GoalsSection({
               Medallero de Honor
             </h2>
             <p className="text-xs text-neutral-400 font-light">
-              Insignias ganarbles por tu rendimiento demostrado en el campo de juego.
+              Insignias ganables por tu rendimiento demostrado en el campo de juego.
             </p>
           </div>
         </div>
@@ -89,9 +117,10 @@ export default function GoalsSection({
         ) : (
           <div className="flex flex-wrap gap-2.5">
             {unlockedBadges.map((badge) => (
-              <div
+              <motion.div
                 key={badge.name}
-                className="inline-flex items-center gap-2 medal-gold rounded-full px-4 py-2 shadow-lg transition-transform hover:-translate-y-0.5 relative group"
+                whileHover={{ scale: 1.05 }}
+                className="inline-flex items-center gap-2 medal-gold rounded-full px-4 py-2 shadow-lg transition-transform relative group cursor-help"
               >
                 <Sparkles className="w-3.5 h-3.5" />
                 <span className="text-xs font-black tracking-tight uppercase">
@@ -102,14 +131,14 @@ export default function GoalsSection({
                 <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-[#05070a] text-neutral-300 text-[10px] py-1 px-2.5 rounded border border-white/10 shadow-xl whitespace-nowrap z-30">
                   {badge.description}
                 </span>
-              </div>
+              </motion.div>
             ))}
           </div>
         )}
-      </div>
+      </motion.div>
 
       {/* 2. Form to Add Dynamic Goals */}
-      <div className="glass p-5">
+      <motion.div variants={itemVariants} className="glass p-5">
         <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
           <Target className="w-4.5 h-4.5 text-emerald-400" />
           Nuevo Objetivo en Campaña
@@ -130,30 +159,36 @@ export default function GoalsSection({
               <select
                 value={selectedPlazo}
                 onChange={(e) => setSelectedPlazo(e.target.value as any)}
-                className="bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-white font-medium text-xs focus:outline-none focus:border-emerald-500 cursor-pointer uppercase tracking-wider"
+                className="bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-white font-medium text-xs focus:outline-none focus:border-emerald-500 cursor-pointer uppercase tracking-wider h-12"
               >
                 <option value="Corto" className="bg-neutral-900">Corto Plazo</option>
                 <option value="Mediano" className="bg-neutral-900">Medio Plazo</option>
                 <option value="Largo" className="bg-neutral-900">Largo Plazo</option>
               </select>
 
-              <button
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 type="submit"
                 className="bg-emerald-500 hover:bg-emerald-400 text-neutral-950 w-12 h-12 rounded-xl flex items-center justify-center font-bold tracking-tight shrink-0 transition cursor-pointer"
               >
                 <Plus className="w-6 h-6 stroke-[3]" />
-              </button>
+              </motion.button>
             </div>
           </div>
         </form>
-      </div>
+      </motion.div>
 
       {/* 3. Three Columns columns/lists: Corto, Mediano, Largo Plazo */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {(['Corto', 'Mediano', 'Largo'] as const).map((plazo) => {
           const plazoGoals = getGoalsByPlazo(plazo);
           return (
-            <div key={plazo} className="glass p-5 flex flex-col">
+            <motion.div 
+              variants={itemVariants}
+              key={plazo} 
+              className="glass p-5 flex flex-col"
+            >
               <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-4">
                 <div className="flex items-center gap-2">
                   <Bookmark className="w-4 h-4 text-emerald-400" />
@@ -171,50 +206,60 @@ export default function GoalsSection({
                   Sin objetivos creados.
                 </p>
               ) : (
-                <div className="space-y-2.5 flex-1">
-                  {plazoGoals.map((g) => (
-                    <div
-                      key={g.id}
-                      className={`flex items-center justify-between p-3 rounded-xl border transition duration-150 ${
-                        g.completado
-                          ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300'
-                          : 'bg-white/5 border-white/10 hover:border-white/20 text-neutral-200'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3 flex-1 min-w-0 pr-2">
-                        <button
-                          type="button"
-                          onClick={() => handleCompleteGoal(g.id, g.completado)}
-                          className={`w-5 h-5 rounded-md border flex items-center justify-center shrink-0 transition cursor-pointer ${
-                            g.completado
-                              ? 'bg-emerald-500 border-emerald-500 text-neutral-950 font-bold'
-                              : 'border-white/20 hover:border-emerald-500/60'
-                          }`}
-                        >
-                          {g.completado && <Check className="w-3 h-3 stroke-[3]" />}
-                        </button>
-                        
-                        <span className={`text-xs break-words font-medium ${g.completado ? 'line-through text-neutral-500' : ''}`}>
-                          {g.texto}
-                        </span>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => onDeleteGoal(g.id)}
-                        className="text-neutral-500 hover:text-rose-400 p-1 rounded-lg hover:bg-white/5 transition shrink-0 cursor-pointer"
-                        title="Borrar objetivo"
+                <div className="space-y-2.5 flex-1 relative">
+                  <AnimatePresence initial={false}>
+                    {plazoGoals.map((g) => (
+                      <motion.div
+                        key={g.id}
+                        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                        transition={{ duration: 0.2 }}
+                        className={`flex items-center justify-between p-3 rounded-xl border transition-colors ${
+                          g.completado
+                            ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300'
+                            : 'bg-white/5 border-white/5 hover:border-white/12 text-neutral-200'
+                        }`}
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  ))}
+                        <div className="flex items-center gap-3 flex-1 min-w-0 pr-2">
+                          <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            type="button"
+                            onClick={() => handleCompleteGoal(g.id, g.completado)}
+                            className={`w-5 h-5 rounded-md border flex items-center justify-center shrink-0 transition cursor-pointer ${
+                              g.completado
+                                ? 'bg-emerald-500 border-emerald-500 text-neutral-950 font-bold'
+                                : 'border-white/25 hover:border-emerald-500/60'
+                            }`}
+                          >
+                            {g.completado && <Check className="w-3 h-3 stroke-[3]" />}
+                          </motion.button>
+                          
+                          <span className={`text-xs break-words font-medium ${g.completado ? 'line-through text-neutral-550' : ''}`}>
+                            {g.texto}
+                          </span>
+                        </div>
+
+                        <motion.button
+                          whileHover={{ scale: 1.1, color: "#f87171" }}
+                          whileTap={{ scale: 0.9 }}
+                          type="button"
+                          onClick={() => onDeleteGoal(g.id)}
+                          className="text-neutral-500 p-1 rounded-lg hover:bg-white/5 transition shrink-0 cursor-pointer"
+                          title="Borrar objetivo"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </motion.button>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
                 </div>
               )}
-            </div>
+            </motion.div>
           );
         })}
       </div>
-    </div>
+    </motion.div>
   );
 }

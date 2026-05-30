@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { PlayerProfile, ActivityLog } from '../types';
 import { calculateStreak } from '../utils/streakHelper';
 import { calculateBadges } from '../utils/badgeHelper';
@@ -80,10 +81,38 @@ export default function Dashboard({
   const goalsOffset = strokeDash - (goalsPct / 100) * strokeDash;
   const assistsOffset = strokeDash - (assistsPct / 100) * strokeDash;
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 16 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { type: "spring", stiffness: 100, damping: 14 }
+    }
+  };
+
   return (
-    <div className="space-y-6 pb-24">
+    <>
+      <motion.div 
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="space-y-6 pb-24"
+      >
       {/* 1. Streak Fire Banner (Top highlight) */}
-      <div className="glass border-orange-500/20 p-4 flex items-center justify-between gap-4 animate-fade-in">
+      <motion.div 
+        variants={itemVariants}
+        className="glass border-orange-500/20 p-4 flex items-center justify-between gap-4"
+      >
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-orange-500/10 text-orange-400 flex items-center justify-center border border-orange-500/20">
             <Flame className="w-5.5 h-5.5 fill-orange-500/20 animate-bounce" />
@@ -103,16 +132,18 @@ export default function Dashboard({
           <span className="text-3xl font-black text-orange-500 italic leading-none">{streak}</span>
           <span className="text-[10px] font-bold uppercase tracking-wider text-orange-400/80">Días</span>
         </div>
-      </div>
+      </motion.div>
 
       {/* 2. Progress Circles (Goles & Asistencias Metas) */}
-      <div className="grid grid-cols-2 gap-3 sm:gap-4">
+      <motion.div variants={itemVariants} className="grid grid-cols-2 gap-3 sm:gap-4">
         {/* Goals Progress Ring Box */}
-        <div 
+        <motion.div 
           onClick={() => {
             setTempGoalsTarget(goalsGoal);
             setShowGoalsModal(true);
           }}
+          whileHover={{ scale: 1.02, translateY: -2 }}
+          whileTap={{ scale: 0.98 }}
           className="glass glass-interactive px-3 py-4 sm:px-5 sm:py-6 flex flex-col items-center justify-between cursor-pointer relative group"
         >
           <div className="absolute top-2 right-2.5 hidden sm:block opacity-0 group-hover:opacity-100 transition text-[10px] bg-white/10 text-neutral-200 rounded px-1.5 py-0.5 border border-white/10">
@@ -136,14 +167,16 @@ export default function Dashboard({
                 strokeWidth="7"
               />
               {/* Dynamic Color Progress Overlay */}
-              <circle
+              <motion.circle
                 cx="50"
                 cy="50"
                 r="40"
-                className="fill-none transition-all duration-500 ease-out"
+                className="fill-none"
                 strokeWidth="8"
                 strokeDasharray={strokeDash}
-                strokeDashoffset={goalsOffset}
+                initial={{ strokeDashoffset: strokeDash }}
+                animate={{ strokeDashoffset: goalsOffset }}
+                transition={{ duration: 1.2, ease: "easeOut", delay: 0.1 }}
                 stroke={goalsColor}
                 strokeLinecap="round"
               />
@@ -164,14 +197,16 @@ export default function Dashboard({
               {goalsPct.toFixed(0)}% OK
             </span>
           </div>
-        </div>
+        </motion.div>
 
         {/* Assists Progress Ring Box */}
-        <div 
+        <motion.div 
           onClick={() => {
             setTempAssistsTarget(assistsGoal);
             setShowAssistsModal(true);
           }}
+          whileHover={{ scale: 1.02, translateY: -2 }}
+          whileTap={{ scale: 0.98 }}
           className="glass glass-interactive px-3 py-4 sm:px-5 sm:py-6 flex flex-col items-center justify-between cursor-pointer relative group"
         >
           <div className="absolute top-2 right-2.5 hidden sm:block opacity-0 group-hover:opacity-100 transition text-[10px] bg-white/10 text-neutral-200 rounded px-1.5 py-0.5 border border-white/10">
@@ -194,14 +229,16 @@ export default function Dashboard({
                 className="stroke-white/10 fill-none"
                 strokeWidth="7"
               />
-              <circle
+              <motion.circle
                 cx="50"
                 cy="50"
                 r="40"
-                className="fill-none transition-all duration-500 ease-out"
+                className="fill-none"
                 strokeWidth="8"
                 strokeDasharray={strokeDash}
-                strokeDashoffset={assistsOffset}
+                initial={{ strokeDashoffset: strokeDash }}
+                animate={{ strokeDashoffset: assistsOffset }}
+                transition={{ duration: 1.2, ease: "easeOut", delay: 0.15 }}
                 stroke={assistsColor}
                 strokeLinecap="round"
               />
@@ -222,12 +259,12 @@ export default function Dashboard({
               {assistsPct.toFixed(0)}% OK
             </span>
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
       {/* 3. Flat Cards: Total Games & Trainings */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="glass p-4.5 flex items-center gap-3.5">
+      <motion.div variants={itemVariants} className="grid grid-cols-2 gap-4">
+        <div className="glass p-4.5 flex items-center gap-3.5 hover:border-white/10 transition">
           <div className="p-2.5 bg-white/5 text-emerald-400 border border-white/10 rounded-lg shrink-0">
             <TrendingUp className="w-5 h-5" />
           </div>
@@ -239,7 +276,7 @@ export default function Dashboard({
           </div>
         </div>
 
-        <div className="glass p-4.5 flex items-center gap-3.5">
+        <div className="glass p-4.5 flex items-center gap-3.5 hover:border-white/10 transition">
           <div className="p-2.5 bg-white/5 text-emerald-400 border border-white/10 rounded-lg shrink-0">
             <Calendar className="w-5 h-5" />
           </div>
@@ -250,10 +287,10 @@ export default function Dashboard({
             <span className="text-xl font-bold text-white">{totalEntrenamientos}</span>
           </div>
         </div>
-      </div>
+      </motion.div>
 
-      {/* 4. Badges Preview Carousel - Summarized to occupy minimum vertical space */}
-      <div className="glass p-5 space-y-3.5">
+      {/* 4. Badges Preview Carousel */}
+      <motion.div variants={itemVariants} className="glass p-5 space-y-3.5">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-bold text-white uppercase tracking-tight flex items-center gap-2">
             <Award className="w-4 h-4 text-emerald-400 animate-pulse" />
@@ -280,9 +317,10 @@ export default function Dashboard({
         ) : (
           <div className="flex flex-wrap gap-1.5 pt-0.5">
             {unlockedBadges.map((bg) => (
-              <div 
+              <motion.div 
                 key={bg.name}
                 title={`${bg.name}: ${bg.description}`}
+                whileHover={{ scale: 1.05, rotate: 1 }}
                 className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-500/10 to-yellow-500/10 hover:from-amber-400/20 hover:to-yellow-400/20 border border-amber-500/20 hover:border-amber-400/30 text-amber-300 px-2.5 py-1 rounded-xl text-[10.5px] font-black uppercase tracking-wider shadow-sm cursor-help transition-all duration-200"
               >
                 <Trophy className="w-3 h-3 text-amber-400 fill-amber-400/10" />
@@ -292,22 +330,25 @@ export default function Dashboard({
                     x{bg.count}
                   </span>
                 )}
-              </div>
+              </motion.div>
             ))}
           </div>
         )}
-      </div>
+      </motion.div>
 
       {/* 5. Primary CTA: Quick Register Activity */}
-      <div className="pt-1">
-        <button
+      <motion.div variants={itemVariants} className="pt-1">
+        <motion.button
+          whileHover={{ scale: 1.01 }}
+          whileTap={{ scale: 0.99 }}
           onClick={onOpenRegisterModal}
           className="w-full bg-emerald-500 hover:bg-emerald-400 active:scale-[0.99] text-neutral-950 font-black py-3.5 px-6 rounded-xl transition duration-200 shadow-xl shadow-emerald-500/15 flex items-center justify-center gap-2 group cursor-pointer text-sm uppercase tracking-wider"
         >
           <Plus className="w-4 h-4 stroke-[3]" />
           Registrar Jornada de Hoy
-        </button>
-      </div>
+        </motion.button>
+      </motion.div>
+    </motion.div>
 
       {/* 2. Modals / Bottom Sheets for Edit Goal Targets */}
       {/* Goals Target Modal */}
@@ -417,6 +458,6 @@ export default function Dashboard({
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
