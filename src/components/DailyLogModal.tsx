@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ActivityLog } from '../types';
+import { ActivityLog, PlayerProfile } from '../types';
 import { X, Calendar, MessageSquare, Award, Play } from 'lucide-react';
 
 interface DailyLogModalProps {
@@ -7,6 +7,7 @@ interface DailyLogModalProps {
   onClose: () => void;
   onSave: (log: Omit<ActivityLog, 'id' | 'timestamp'> & { id?: string }) => void;
   editLog: ActivityLog | null; // null if creating a new entry
+  profile?: PlayerProfile | null;
 }
 
 export default function DailyLogModal({
@@ -14,12 +15,17 @@ export default function DailyLogModal({
   onClose,
   onSave,
   editLog,
+  profile,
 }: DailyLogModalProps) {
   const [tipo, setTipo] = useState<'Entrenamiento' | 'Partido'>('Partido');
   const [fecha, setFecha] = useState('');
   const [goles, setGoles] = useState(0);
   const [asistencias, setAsistencias] = useState(0);
+  const [atajadas, setAtajadas] = useState(0);
+  const [vallaInvicta, setVallaInvicta] = useState(false);
   const [reflexion, setReflexion] = useState('');
+
+  const isArquero = profile?.posicion === 'Arquero';
 
   // Preload values if in edit mode, or default to current date when creating
   useEffect(() => {
@@ -29,6 +35,8 @@ export default function DailyLogModal({
         setFecha(editLog.fecha);
         setGoles(editLog.goles);
         setAsistencias(editLog.asistencias);
+        setAtajadas(editLog.atajadas || 0);
+        setVallaInvicta(!!editLog.vallaInvicta);
         setReflexion(editLog.reflexion);
       } else {
         setTipo('Partido');
@@ -37,6 +45,8 @@ export default function DailyLogModal({
         setFecha(todayStr);
         setGoles(0);
         setAsistencias(0);
+        setAtajadas(0);
+        setVallaInvicta(false);
         setReflexion('');
       }
     }
@@ -54,6 +64,8 @@ export default function DailyLogModal({
       fecha,
       goles: tipo === 'Partido' ? goles : 0,
       asistencias: tipo === 'Partido' ? asistencias : 0,
+      atajadas: (tipo === 'Partido' && isArquero) ? atajadas : 0,
+      vallaInvicta: (tipo === 'Partido' && isArquero) ? vallaInvicta : false,
       reflexion: reflexion.trim(),
     });
   };
@@ -135,57 +147,105 @@ export default function DailyLogModal({
 
           {/* 3. Stats section: Only shown if PARTIDO is toggled */}
           {tipo === 'Partido' && (
-            <div className="grid grid-cols-2 gap-4 bg-white/5 p-4 border border-white/10 rounded-xl">
-              {/* Goals counter */}
-              <div className="space-y-1.5">
-                <span className="block text-[10px] font-bold text-neutral-400 uppercase tracking-wider text-center">
-                  Goles Marcados
-                </span>
-                
-                <div className="flex items-center justify-between bg-white/5 rounded-lg border border-white/10 p-2 max-w-[150px] mx-auto">
-                  <button
-                    type="button"
-                    onClick={() => setGoles(Math.max(0, goles - 1))}
-                    className="w-8 h-8 rounded bg-white/15 border border-white/10 text-white hover:border-white/35 transition font-black text-center text-sm cursor-pointer"
-                  >
-                    -
-                  </button>
-                  <span className="text-xl font-bold text-white w-6 text-center">{goles}</span>
-                  <button
-                    type="button"
-                    onClick={() => setGoles(goles + 1)}
-                    className="w-8 h-8 rounded bg-white/15 border border-white/10 text-white hover:border-white/35 transition font-black text-center text-sm cursor-pointer"
-                  >
-                    +
-                  </button>
+            isArquero ? (
+              <div className="grid grid-cols-2 gap-4 bg-emerald-500/5 p-4 border border-emerald-500/20 rounded-xl">
+                {/* Goalkeeper Saves (Atajadas Clave) */}
+                <div className="space-y-1.5">
+                  <span className="block text-[10px] font-bold text-neutral-400 uppercase tracking-wider text-center flex items-center justify-center gap-1.5">
+                    👐 Atajadas Clave
+                  </span>
+                  
+                  <div className="flex items-center justify-between bg-white/5 rounded-lg border border-white/10 p-2 max-w-[150px] mx-auto">
+                    <button
+                      type="button"
+                      onClick={() => setAtajadas(Math.max(0, atajadas - 1))}
+                      className="w-8 h-8 rounded bg-white/10 border border-white/15 text-white hover:border-white/35 transition font-black text-center text-sm cursor-pointer"
+                    >
+                      -
+                    </button>
+                    <span className="text-xl font-black text-white w-6 text-center">{atajadas}</span>
+                    <button
+                      type="button"
+                      onClick={() => setAtajadas(atajadas + 1)}
+                      className="w-8 h-8 rounded bg-white/10 border border-white/15 text-white hover:border-white/35 transition font-black text-center text-sm cursor-pointer"
+                    >
+                      +
+                    </button>
+                  </div>
                 </div>
-              </div>
 
-              {/* Assists counter */}
-              <div className="space-y-1.5">
-                <span className="block text-[10px] font-bold text-neutral-400 uppercase tracking-wider text-center">
-                  Asistencias Dadas
-                </span>
-                
-                <div className="flex items-center justify-between bg-white/5 rounded-lg border border-white/10 p-2 max-w-[150px] mx-auto">
+                {/* Goalkeeper Clean Sheet (Valla Invicta) Toggle button */}
+                <div className="space-y-1.5 flex flex-col justify-between">
+                  <span className="block text-[10px] font-bold text-neutral-400 uppercase tracking-wider text-center">
+                    🛡️ Arco en Cero
+                  </span>
+                  
                   <button
                     type="button"
-                    onClick={() => setAsistencias(Math.max(0, asistencias - 1))}
-                    className="w-8 h-8 rounded bg-white/15 border border-white/10 text-white hover:border-white/35 transition font-black text-center text-sm cursor-pointer"
+                    onClick={() => setVallaInvicta(!vallaInvicta)}
+                    className={`py-2 px-3 border rounded-lg transition-all text-[11px] font-black uppercase text-center w-full max-w-[150px] mx-auto cursor-pointer ${
+                      vallaInvicta 
+                        ? 'bg-emerald-500 hover:bg-emerald-400 border-emerald-400 text-neutral-950 shadow-md shadow-emerald-500/10'
+                        : 'bg-white/5 border-white/10 text-neutral-400 hover:border-white/20 hover:text-neutral-350'
+                    }`}
                   >
-                    -
-                  </button>
-                  <span className="text-xl font-bold text-white w-6 text-center">{asistencias}</span>
-                  <button
-                    type="button"
-                    onClick={() => setAsistencias(asistencias + 1)}
-                    className="w-8 h-8 rounded bg-white/15 border border-white/10 text-white hover:border-white/35 transition font-black text-center text-sm cursor-pointer"
-                  >
-                    +
+                    {vallaInvicta ? '🏆 Valla Invicta' : 'Recibió Goles'}
                   </button>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-4 bg-white/5 p-4 border border-white/10 rounded-xl">
+                {/* Goals counter */}
+                <div className="space-y-1.5">
+                  <span className="block text-[10px] font-bold text-neutral-400 uppercase tracking-wider text-center">
+                    Goles Marcados
+                  </span>
+                  
+                  <div className="flex items-center justify-between bg-white/5 rounded-lg border border-white/10 p-2 max-w-[150px] mx-auto">
+                    <button
+                      type="button"
+                      onClick={() => setGoles(Math.max(0, goles - 1))}
+                      className="w-8 h-8 rounded bg-white/15 border border-white/10 text-white hover:border-white/35 transition font-black text-center text-sm cursor-pointer"
+                    >
+                      -
+                    </button>
+                    <span className="text-xl font-bold text-white w-6 text-center">{goles}</span>
+                    <button
+                      type="button"
+                      onClick={() => setGoles(goles + 1)}
+                      className="w-8 h-8 rounded bg-white/15 border border-white/10 text-white hover:border-white/35 transition font-black text-center text-sm cursor-pointer"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                {/* Assists counter */}
+                <div className="space-y-1.5">
+                  <span className="block text-[10px] font-bold text-neutral-400 uppercase tracking-wider text-center">
+                    Asistencias Dadas
+                  </span>
+                  
+                  <div className="flex items-center justify-between bg-white/5 rounded-lg border border-white/10 p-2 max-w-[150px] mx-auto">
+                    <button
+                      type="button"
+                      onClick={() => setAsistencias(Math.max(0, asistencias - 1))}
+                      className="w-8 h-8 rounded bg-white/15 border border-white/10 text-white hover:border-white/35 transition font-black text-center text-sm cursor-pointer"
+                    >
+                      -
+                    </button>
+                    <span className="text-xl font-bold text-white w-6 text-center">{asistencias}</span>
+                    <button
+                      type="button"
+                      onClick={() => setAsistencias(asistencias + 1)}
+                      className="w-8 h-8 rounded bg-white/15 border border-white/10 text-white hover:border-white/35 transition font-black text-center text-sm cursor-pointer"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )
           )}
 
           {/* 4. Reflection field */}

@@ -44,9 +44,13 @@ export default function Dashboard({
   const [tempGoalsTarget, setTempGoalsTarget] = useState(goalsGoal);
   const [tempAssistsTarget, setTempAssistsTarget] = useState(assistsGoal);
 
+  const isArquero = profile.posicion === 'Arquero';
+
   // Aggregated math stats
   const totalGoles = logs.reduce((sum, log) => sum + (log.goles || 0), 0);
   const totalAsistencias = logs.reduce((sum, log) => sum + (log.asistencias || 0), 0);
+  const totalAtajadas = logs.reduce((sum, log) => sum + (log.atajadas || 0), 0);
+  const totalVallasInvictas = logs.reduce((sum, log) => sum + (log.vallaInvicta ? 1 : 0), 0);
   const totalPartidos = logs.filter((log) => log.tipo === 'Partido').length;
   const totalEntrenamientos = logs.filter((log) => log.tipo === 'Entrenamiento').length;
   
@@ -70,8 +74,13 @@ export default function Dashboard({
     }
   };
 
-  const goalsPct = Math.min(100, Math.max(0, (totalGoles / goalsGoal) * 100));
-  const assistsPct = Math.min(100, Math.max(0, (totalAsistencias / assistsGoal) * 100));
+  const goalsPct = isArquero
+    ? Math.min(100, Math.max(0, (totalAtajadas / goalsGoal) * 100))
+    : Math.min(100, Math.max(0, (totalGoles / goalsGoal) * 100));
+
+  const assistsPct = isArquero
+    ? Math.min(100, Math.max(0, (totalVallasInvictas / assistsGoal) * 100))
+    : Math.min(100, Math.max(0, (totalAsistencias / assistsGoal) * 100));
 
   const goalsColor = getProgressColor(goalsPct);
   const assistsColor = getProgressColor(assistsPct);
@@ -136,7 +145,7 @@ export default function Dashboard({
 
       {/* 2. Progress Circles (Goles & Asistencias Metas) */}
       <motion.div variants={itemVariants} className="grid grid-cols-2 gap-3 sm:gap-4">
-        {/* Goals Progress Ring Box */}
+        {/* Goals / Atajadas Progress Ring Box */}
         <motion.div 
           onClick={() => {
             setTempGoalsTarget(goalsGoal);
@@ -152,7 +161,7 @@ export default function Dashboard({
           
           <h3 className="text-[10px] sm:text-xs font-bold text-neutral-350 uppercase tracking-widest mb-3 flex items-center gap-1 sm:gap-1.5">
             <Target className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
-            Metas: Goles
+            {isArquero ? 'Meta: Atajadas' : 'Metas: Goles'}
           </h3>
 
           {/* SVG Progress Circle */}
@@ -182,9 +191,11 @@ export default function Dashboard({
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-              <span className="text-2xl sm:text-3xl font-extrabold text-white leading-none">{totalGoles}</span>
+              <span className="text-2xl sm:text-3xl font-extrabold text-white leading-none">
+                {isArquero ? totalAtajadas : totalGoles}
+              </span>
               <span className="text-[8px] sm:text-[10px] font-bold text-neutral-400 uppercase tracking-widest mt-0.5 sm:mt-1 font-mono">
-                Anotados
+                {isArquero ? 'Salvadas' : 'Anotados'}
               </span>
             </div>
           </div>
@@ -199,7 +210,7 @@ export default function Dashboard({
           </div>
         </motion.div>
 
-        {/* Assists Progress Ring Box */}
+        {/* Assists / Vallas Invictas Progress Ring Box */}
         <motion.div 
           onClick={() => {
             setTempAssistsTarget(assistsGoal);
@@ -215,7 +226,7 @@ export default function Dashboard({
 
           <h3 className="text-[10px] sm:text-xs font-bold text-neutral-350 uppercase tracking-widest mb-3 flex items-center gap-1 sm:gap-1.5">
             <Target className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
-            Metas: Pases
+            {isArquero ? 'Meta: Arco en Cero' : 'Metas: Pases'}
           </h3>
 
           {/* SVG Progress Circle */}
@@ -244,9 +255,11 @@ export default function Dashboard({
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-              <span className="text-2xl sm:text-3xl font-extrabold text-white leading-none">{totalAsistencias}</span>
+              <span className="text-2xl sm:text-3xl font-extrabold text-white leading-none">
+                {isArquero ? totalVallasInvictas : totalAsistencias}
+              </span>
               <span className="text-[8px] sm:text-[10px] font-bold text-neutral-400 uppercase tracking-widest mt-0.5 sm:mt-1 font-mono">
-                Servidos
+                {isArquero ? 'Vallas' : 'Servidos'}
               </span>
             </div>
           </div>
@@ -354,12 +367,14 @@ export default function Dashboard({
       {/* Goals Target Modal */}
       {showGoalsModal && (
         <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="w-full sm:max-w-md glass p-6 shadow-2xl relative">
-            <h3 className="text-lg font-bold text-white uppercase tracking-tight mb-1">
-              Modificar Meta de Goles
+          <div className="w-full sm:max-w-md glass p-6 shadow-2xl relative border border-white/10 rounded-2xl">
+            <h3 className="text-lg font-black text-white uppercase tracking-tight mb-1">
+              {isArquero ? 'Modificar Meta de Atajadas' : 'Modificar Meta de Goles'}
             </h3>
             <p className="text-xs text-neutral-450 mb-6 font-light">
-              Ajusta la cantidad de goles que pretendes alcanzar en este ciclo.
+              {isArquero 
+                ? 'Ajusta la cantidad de atajadas clave que pretendes acumular como arquero.' 
+                : 'Ajusta la cantidad de goles que pretendes alcanzar en este ciclo.'}
             </p>
 
             <div className="space-y-4 mb-6">
@@ -396,7 +411,7 @@ export default function Dashboard({
                   onUpdateGoalsGoal(tempGoalsTarget);
                   setShowGoalsModal(false);
                 }}
-                className="py-3 px-4 rounded-xl text-xs font-bold bg-emerald-500 text-neutral-950 hover:bg-emerald-400 uppercase cursor-pointer"
+                className="py-3 px-4 rounded-xl text-xs font-black bg-emerald-500 text-neutral-950 hover:bg-emerald-400 uppercase cursor-pointer"
               >
                 Guardar Meta
               </button>
@@ -408,12 +423,14 @@ export default function Dashboard({
       {/* Assists Target Modal */}
       {showAssistsModal && (
         <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="w-full sm:max-w-md glass p-6 shadow-2xl relative">
-            <h3 className="text-lg font-bold text-white uppercase tracking-tight mb-1">
-              Modificar Meta de Asistencias
+          <div className="w-full sm:max-w-md glass p-6 shadow-2xl relative border border-white/10 rounded-2xl">
+            <h3 className="text-lg font-black text-white uppercase tracking-tight mb-1">
+              {isArquero ? 'Modificar Meta de Vallas Invictas' : 'Modificar Meta de Asistencias'}
             </h3>
             <p className="text-xs text-neutral-450 mb-6 font-light">
-              Ajusta la cantidad de asistencias que pretendes dar en el ciclo de entrenamientos.
+              {isArquero 
+                ? 'Ajusta la cantidad de partidos con el arco en cero que buscas lograr.' 
+                : 'Ajusta la cantidad de asistencias que pretendes dar en el ciclo de entrenamientos.'}
             </p>
 
             <div className="space-y-4 mb-6">
@@ -450,7 +467,7 @@ export default function Dashboard({
                   onUpdateAssistsGoal(tempAssistsTarget);
                   setShowAssistsModal(false);
                 }}
-                className="py-3 px-4 rounded-xl text-xs font-bold bg-emerald-500 text-neutral-950 hover:bg-emerald-400 uppercase cursor-pointer"
+                className="py-3 px-4 rounded-xl text-xs font-black bg-emerald-500 text-neutral-950 hover:bg-emerald-400 uppercase cursor-pointer"
               >
                 Guardar Meta
               </button>

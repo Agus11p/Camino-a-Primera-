@@ -12,11 +12,17 @@ export function calculateBadges(logs: ActivityLog[]): BadgeCount[] {
     '4 Hat-tricks': { count: 0, desc: '12 o más goles en un solo partido' },
     'Asistidor Estrella': { count: 0, desc: '3 o más asistencias en un solo partido' },
     'Socio Ideal': { count: 0, desc: 'Al menos 1 gol y 1 asistencia en el mismo partido' },
+    'Cerrojo de Oro': { count: 0, desc: 'Arco en cero (valla invicta) en un partido' },
+    'Pulpo del Área': { count: 0, desc: 'Hacer 6 o más atajadas clave en un partido' },
+    'Invicto Supremo': { count: 0, desc: 'Hacer 10 o más atajadas con valla invicta' },
+    'Muralla de Primera': { count: 0, desc: 'Mantener la valla invicta en 3 o más partidos' },
   };
 
   matches.forEach((m) => {
     const g = m.goles;
     const a = m.asistencias;
+    const at = m.atajadas || 0;
+    const vi = !!m.vallaInvicta;
 
     // Goles thresholds
     if (g === 3) {
@@ -44,7 +50,23 @@ export function calculateBadges(logs: ActivityLog[]): BadgeCount[] {
     if (g >= 1 && a >= 1) {
       counts['Socio Ideal'].count += 1;
     }
+
+    // Goalkeeper achievements
+    if (vi) {
+      counts['Cerrojo de Oro'].count += 1;
+    }
+    if (at >= 6) {
+      counts['Pulpo del Área'].count += 1;
+    }
+    if (at >= 10 && vi) {
+      counts['Invicto Supremo'].count += 1;
+    }
   });
+
+  const totalCleanSheets = matches.filter(m => m.vallaInvicta).length;
+  if (totalCleanSheets >= 3) {
+    counts['Muralla de Primera'].count = 1;
+  }
 
   // Keep only unlocked badges (count > 0)
   return Object.entries(counts)

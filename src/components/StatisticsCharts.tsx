@@ -1,21 +1,31 @@
 import React from 'react';
-import { ActivityLog } from '../types';
+import { ActivityLog, PlayerProfile } from '../types';
 import { AreaChart, Calendar, TrendingUp } from 'lucide-react';
 
 interface StatisticsChartsProps {
   logs: ActivityLog[];
+  profile?: PlayerProfile | null;
 }
 
-export default function StatisticsCharts({ logs }: StatisticsChartsProps) {
+export default function StatisticsCharts({ logs, profile }: StatisticsChartsProps) {
   const matches = logs.filter((log) => log.tipo === 'Partido');
+  const isArquero = profile?.posicion === 'Arquero';
 
   // 1. Calculate historical metrics
   const totalPartidos = matches.length;
   const totalGoles = matches.reduce((sum, m) => sum + m.goles, 0);
   const totalAsistencias = matches.reduce((sum, m) => sum + m.asistencias, 0);
+  const totalAtajadas = matches.reduce((sum, m) => sum + (m.atajadas || 0), 0);
+  const totalVallasInvictas = matches.reduce((sum, m) => sum + (m.vallaInvicta ? 1 : 0), 0);
 
   const promedioGoles = totalPartidos > 0 ? parseFloat((totalGoles / totalPartidos).toFixed(2)) : 0;
   const promedioAsistencias = totalPartidos > 0 ? parseFloat((totalAsistencias / totalPartidos).toFixed(2)) : 0;
+  const promedioAtajadas = totalPartidos > 0 ? parseFloat((totalAtajadas / totalPartidos).toFixed(2)) : 0;
+  
+  // Percentage of clean sheets over total matches (porcentaje)
+  const promedioVallasPct = totalPartidos > 0 
+    ? Math.round((totalVallasInvictas / totalPartidos) * 100) 
+    : 0;
 
   // 2. Fetch last 5 matches (oldest to newest for rendering chronologically left-to-right)
   const last5Matches = [...matches]
@@ -26,8 +36,13 @@ export default function StatisticsCharts({ logs }: StatisticsChartsProps) {
   // Find max value in last 5 matches to scale the CSS chart (max goals or assists in any single game)
   let maxSingleVal = 1;
   last5Matches.forEach((m) => {
-    if (m.goles > maxSingleVal) maxSingleVal = m.goles;
-    if (m.asistencias > maxSingleVal) maxSingleVal = m.asistencias;
+    if (isArquero) {
+      const at = m.atajadas || 0;
+      if (at > maxSingleVal) maxSingleVal = at;
+    } else {
+      if (m.goles > maxSingleVal) maxSingleVal = m.goles;
+      if (m.asistencias > maxSingleVal) maxSingleVal = m.asistencias;
+    }
   });
 
   // SVG Coordinates calculations
@@ -40,15 +55,19 @@ export default function StatisticsCharts({ logs }: StatisticsChartsProps) {
   const goalsPoints = last5Matches.map((m, i) => {
     const divisorX = pointsCount > 1 ? pointsCount - 1 : 1;
     const x = paddingX + (i / divisorX) * (width - paddingX * 2);
-    const y = height - paddingY - (m.goles / Math.max(1, maxSingleVal)) * (height - paddingY * 2);
-    return { x, y, value: m.goles, date: m.fecha };
+    const val = isArquero ? (m.atajadas || 0) : m.goles;
+    const y = height - paddingY - (val / Math.max(1, maxSingleVal)) * (height - paddingY * 2);
+    return { x, y, value: val, date: m.fecha };
   });
 
   const assistsPoints = last5Matches.map((m, i) => {
     const divisorX = pointsCount > 1 ? pointsCount - 1 : 1;
     const x = paddingX + (i / divisorX) * (width - paddingX * 2);
-    const y = height - paddingY - (m.asistencias / Math.max(1, maxSingleVal)) * (height - paddingY * 2);
-    return { x, y, value: m.asistencias, date: m.fecha };
+    const valRaw = isArquero ? (m.vallaInvicta ? 1 : 0) : m.asistencias;
+    // Scale clean sheet visual line to be either full peak (matching maxSingleVal) or base
+    const valScaled = isArquero ? (m.vallaInvicta ? maxSingleVal : 0) : valRaw;
+    const y = height - paddingY - (valScaled / Math.max(1, maxSingleVal)) * (height - paddingY * 2);
+    return { x, y, value: valRaw, date: m.fecha };
   });
 
   const createPath = (points: {x: number, y: number}[]) => {
@@ -89,13 +108,15 @@ export default function StatisticsCharts({ logs }: StatisticsChartsProps) {
         <div className="glass p-3 sm:p-5 flex items-center justify-between">
           <div>
             <span className="text-[9px] sm:text-[10px] font-bold text-neutral-400 uppercase tracking-widest block mb-0.5 sm:mb-1">
-              Promedio Goles
+              {isArquero ? 'Promedio Atajadas' : 'Promedio Goles'}
             </span>
-            <span className="text-xl sm:text-3xl font-black text-white italic">{promedioGoles}</span>
-            <span className="text-[10px] sm:text-xs text-neutral-500 block mt-0.5 sm:mt-1.5 font-light">Partidos</span>
+            <span className="text-xl sm:text-3xl font-black text-white italic">
+              {isArquero ? promedioAtajadas : promedioGoles}
+            </span>
+            <span className="text-[10px] sm:text-xs text-neutral-500 block mt-0.5 sm:mt-1.5 font-light">Por Partido</span>
           </div>
-          <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20 text-xs sm:text-lg font-black italic">
-            G/P
+          <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20 text-[10px] sm:text-[11px] font-bold uppercase">
+            {isArquero ? 'ATA' : 'G/P'}
           </div>
         </div>
 
@@ -103,13 +124,17 @@ export default function StatisticsCharts({ logs }: StatisticsChartsProps) {
         <div className="glass p-3 sm:p-5 flex items-center justify-between">
           <div>
             <span className="text-[9px] sm:text-[10px] font-bold text-neutral-400 uppercase tracking-widest block mb-0.5 sm:mb-1">
-              Promedio Asistencias
+              {isArquero ? 'Arcos en Cero' : 'Promedio Asistencias'}
             </span>
-            <span className="text-xl sm:text-3xl font-black text-white italic">{promedioAsistencias}</span>
-            <span className="text-[10px] sm:text-xs text-neutral-500 block mt-0.5 sm:mt-1.5 font-light">Partidos</span>
+            <span className="text-xl sm:text-3xl font-black text-white italic">
+              {isArquero ? `${promedioVallasPct}%` : promedioAsistencias}
+            </span>
+            <span className="text-[10px] sm:text-xs text-neutral-500 block mt-0.5 sm:mt-1.5 font-light">
+              {isArquero ? 'Partidos Invicto' : 'Por Partido'}
+            </span>
           </div>
-          <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-full bg-yellow-500/10 text-yellow-500 flex items-center justify-center border border-yellow-500/20 text-xs sm:text-lg font-black italic">
-            A/P
+          <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-full bg-yellow-500/10 text-yellow-500 flex items-center justify-center border border-yellow-500/20 text-[10px] sm:text-[11px] font-bold uppercase">
+            {isArquero ? 'ARC%' : 'A/P'}
           </div>
         </div>
       </div>
@@ -121,7 +146,7 @@ export default function StatisticsCharts({ logs }: StatisticsChartsProps) {
             <AreaChart className="w-5 h-5 text-emerald-400" />
             <div>
               <h3 className="text-sm font-bold text-white uppercase tracking-tight">
-                Rendimiento - Últimos 5 Partidos
+                {isArquero ? 'Progreso de Valla y Atajadas' : 'Rendimiento - Últimos 5 Partidos'}
               </h3>
               <p className="text-xs text-neutral-400">
                 Líneas de progresión histórica de tus destrezas.
@@ -133,11 +158,11 @@ export default function StatisticsCharts({ logs }: StatisticsChartsProps) {
           <div className="flex items-center gap-3 text-xs">
             <span className="flex items-center gap-1.5 text-neutral-300 font-medium font-mono">
               <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500 inline-block" />
-              Goles
+              {isArquero ? 'Atajadas' : 'Goles'}
             </span>
             <span className="flex items-center gap-1.5 text-neutral-300 font-medium font-mono">
               <span className="w-2.5 h-2.5 rounded-sm bg-amber-500 inline-block" />
-              Asistencias
+              {isArquero ? 'Valla Invicta' : 'Asistencias'}
             </span>
           </div>
         </div>
@@ -185,7 +210,7 @@ export default function StatisticsCharts({ logs }: StatisticsChartsProps) {
                   <path
                     d={assistsAreaPath}
                     fill="url(#assistsGrad)"
-                    className="opacity-20"
+                    className="opacity-15"
                   />
                 )}
 
@@ -232,6 +257,7 @@ export default function StatisticsCharts({ logs }: StatisticsChartsProps) {
                     strokeWidth="3.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
+                    filter="url(#glowGreen)"
                   />
                 )}
                 {assistsPath && (
@@ -242,11 +268,20 @@ export default function StatisticsCharts({ logs }: StatisticsChartsProps) {
                     strokeWidth="3.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
+                    filter="url(#glowAmber)"
                   />
                 )}
 
-                {/* SVG Definitions for Gradients */}
+                {/* SVG Definitions for Gradients and Glow filters */}
                 <defs>
+                  <filter id="glowGreen" x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur stdDeviation="3" result="blur" />
+                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                  </filter>
+                  <filter id="glowAmber" x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur stdDeviation="3" result="blur" />
+                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                  </filter>
                   <linearGradient id="goalsGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#10b981" />
                     <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
@@ -263,16 +298,16 @@ export default function StatisticsCharts({ logs }: StatisticsChartsProps) {
                     <circle
                       cx={pt.x}
                       cy={pt.y}
-                      r="5"
+                      r="6"
                       fill="#10b981"
-                      stroke="#0a0a0a"
-                      strokeWidth="2"
+                      stroke="#0f0f11"
+                      strokeWidth="2.5"
                     />
                     <text
                       x={pt.x}
-                      y={pt.y - 10}
+                      y={pt.y - 12}
                       textAnchor="middle"
-                      className="fill-emerald-400 font-bold font-mono text-[10px] bg-black"
+                      className="fill-emerald-400 font-extrabold font-mono text-[10px]"
                     >
                       {pt.value}
                     </text>
@@ -284,18 +319,18 @@ export default function StatisticsCharts({ logs }: StatisticsChartsProps) {
                     <circle
                       cx={pt.x}
                       cy={pt.y}
-                      r="5"
+                      r="6"
                       fill="#f59e0b"
-                      stroke="#0a0a0a"
-                      strokeWidth="2"
+                      stroke="#0f0f11"
+                      strokeWidth="2.5"
                     />
                     <text
                       x={pt.x}
-                      y={pt.y - 10}
+                      y={pt.y - 12}
                       textAnchor="middle"
-                      className="fill-amber-400 font-bold font-mono text-[10px]"
+                      className="fill-amber-400 font-extrabold font-mono text-[9px]"
                     >
-                      {pt.value}
+                      {isArquero ? (pt.value ? 'CERO ✅' : 'GOL ❌') : pt.value}
                     </text>
                   </g>
                 ))}
@@ -303,8 +338,10 @@ export default function StatisticsCharts({ logs }: StatisticsChartsProps) {
             </div>
 
             {/* Quick Summary footnote */}
-            <p className="text-[11px] text-neutral-550 italic text-center font-light">
-              * El gráfico de curvas muestra tu progresión y consistencia en el ataque a lo largo de los partidos.
+            <p className="text-[11px] text-neutral-500 italic text-center font-light">
+              {isArquero 
+                ? '* El gráfico de curvas muestra tu consistencia en el arco (atajadas acumuladas) y efectividad de arco en cero (CERO).'
+                : '* El gráfico de curvas muestra tu progresión y consistencia en el ataque a lo largo de los partidos.'}
             </p>
           </div>
         )}

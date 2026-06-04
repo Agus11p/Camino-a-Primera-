@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { PlayerProfile, PiernaHabil, PosicionTactica, POSICIONES_TACTICAS, HABILIDADES_DISPONIBLES } from '../types';
-import { Shield, Sparkles, User, Info, ArrowLeft } from 'lucide-react';
+import { Shield, Sparkles, User, Info, ArrowLeft, AlertCircle } from 'lucide-react';
 
 interface ProfileSetupProps {
   initialProfile: PlayerProfile | null;
@@ -16,13 +16,32 @@ export default function ProfileSetup({
   onBack,
   showBackButton = false,
 }: ProfileSetupProps) {
+  // Let the states start blank if initialProfile doesn't exist, for ultra-comfortable blank filing
   const [nombre, setNombre] = useState(initialProfile?.nombre || '');
   const [club, setClub] = useState(initialProfile?.club || '');
-  const [edad, setEdad] = useState<number>(initialProfile?.edad || 18);
-  const [peso, setPeso] = useState<number>(initialProfile?.peso || 72);
-  const [altura, setAltura] = useState<number>(initialProfile?.altura || 178);
+  const [edad, setEdad] = useState<number | ''>(
+    initialProfile?.edad !== undefined ? initialProfile.edad : ''
+  );
+  const [peso, setPeso] = useState<number | ''>(
+    initialProfile?.peso !== undefined ? initialProfile.peso : ''
+  );
+  const [altura, setAltura] = useState<number | ''>(
+    initialProfile?.altura !== undefined ? initialProfile.altura : ''
+  );
   const [piernaHabil, setPiernaHabil] = useState<PiernaHabil>(initialProfile?.piernaHabil || 'Diestro');
   const [posicion, setPosicion] = useState<PosicionTactica>(initialProfile?.posicion || 'Delantero Centro');
+
+  // Tracking errors custom react side for premium visual branding feedback
+  const [errors, setErrors] = useState<{
+    nombre?: string;
+    club?: string;
+    edad?: string;
+    peso?: string;
+    altura?: string;
+    habilidades?: string;
+  }>({});
+
+  const [hasSubmitted, setHasSubmitted] = useState(false);
 
   // Positional Category Mapping Setup
   const CATEGORIAS_POSICION: Record<string, PosicionTactica[]> = {
@@ -52,24 +71,25 @@ export default function ProfileSetup({
     return [];
   });
 
-  const [hasSubmitted, setHasSubmitted] = useState(false);
-
-  // Auto calculate IMC
+  // Auto calculate IMC with type safety
   const [imc, setImc] = useState<number>(0);
   const [imcStatus, setImcStatus] = useState<{ label: string; color: string }>({ label: '', color: '' });
 
   useEffect(() => {
-    if (peso > 0 && altura > 0) {
-      const alturaMts = altura / 100;
-      const calculatedImc = parseFloat((peso / (alturaMts * alturaMts)).toFixed(1));
+    const pesoNum = Number(peso);
+    const alturaNum = Number(altura);
+
+    if (pesoNum > 0 && alturaNum > 0) {
+      const alturaMts = alturaNum / 100;
+      const calculatedImc = parseFloat((pesoNum / (alturaMts * alturaMts)).toFixed(1));
       setImc(calculatedImc);
 
       if (calculatedImc < 18.5) {
-        setImcStatus({ label: 'Bajo Peso', color: 'text-amber-400 bg-amber-400/10 border-amber-400/30' });
+        setImcStatus({ label: 'Bajo Peso', color: 'text-amber-400 bg-amber-400/10 border-amber-400/30 font-bold' });
       } else if (calculatedImc >= 18.5 && calculatedImc < 25.0) {
-        setImcStatus({ label: 'Peso Ideal', color: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/30' });
+        setImcStatus({ label: 'Peso Ideal', color: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/30 font-bold' });
       } else {
-        setImcStatus({ label: 'Sobrepeso / Obesidad', color: 'text-rose-400 bg-rose-400/10 border-rose-400/30' });
+        setImcStatus({ label: 'Sobrepeso / Obesidad', color: 'text-rose-450 bg-rose-500/10 border-rose-500/20 font-bold' });
       }
     } else {
       setImc(0);
@@ -78,12 +98,21 @@ export default function ProfileSetup({
   }, [peso, altura]);
 
   const handleToggleHabilidad = (skill: string) => {
+    let nextSkills: string[] = [];
     if (habilidades.includes(skill)) {
-      setHabilidades(habilidades.filter((s) => s !== skill));
+      nextSkills = habilidades.filter((s) => s !== skill);
     } else {
       if (habilidades.length < 5) {
-        setHabilidades([...habilidades, skill]);
+        nextSkills = [...habilidades, skill];
+      } else {
+        nextSkills = habilidades;
       }
+    }
+    setHabilidades(nextSkills);
+    
+    // Clear dynamic sub-errors on the fly
+    if (errors.habilidades && nextSkills.length >= 2 && nextSkills.length <= 5) {
+      setErrors(prev => ({ ...prev, habilidades: undefined }));
     }
   };
 
@@ -91,20 +120,59 @@ export default function ProfileSetup({
     e.preventDefault();
     setHasSubmitted(true);
 
-    if (!nombre.trim() || !club.trim()) {
-      return;
+    const newErrors: typeof errors = {};
+
+    // Validate inputs
+    if (!nombre.trim()) {
+      newErrors.nombre = 'El nombre o apodo es obligatorio para tu registro oficial.';
+    }
+
+    if (!club.trim()) {
+      newErrors.club = 'El club o equipo actual es obligatorio.';
+    }
+
+    if (edad === '') {
+      newErrors.edad = 'La edad es obligatoria.';
+    } else if (edad < 5 || edad > 99) {
+      newErrors.edad = 'Debe tener entre 5 y 99 años de edad.';
+    }
+
+    if (peso === '') {
+      newErrors.peso = 'El peso es obligatorio.';
+    } else if (peso < 20 || peso > 250) {
+      newErrors.peso = 'Debe tener entre 20 y 250 kg.';
+    }
+
+    if (altura === '') {
+      newErrors.altura = 'La altura es obligatoria.';
+    } else if (altura < 50 || altura > 250) {
+      newErrors.altura = 'Debe tener entre 50 y 250 cm.';
     }
 
     if (habilidades.length < 2 || habilidades.length > 5) {
+      newErrors.habilidades = 'Por favor, selecciona entre 2 y 5 destrezas o habilidades destacadas.';
+    }
+
+    setErrors(newErrors);
+
+    // If errors exist, block saving, scroll to the first element with error for convenience
+    if (Object.keys(newErrors).length > 0) {
+      setTimeout(() => {
+        const firstErrorEl = document.querySelector('.error-indicator-target');
+        if (firstErrorEl) {
+          firstErrorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 50);
       return;
     }
 
+    // Since validation matches constraints, values are safely converted to numbers
     onSave({
       nombre: nombre.trim(),
       club: club.trim(),
-      edad,
-      peso,
-      altura,
+      edad: Number(edad),
+      peso: Number(peso),
+      altura: Number(altura),
       piernaHabil,
       posicion,
       habilidad1: habilidades[0] || 'Definición',
@@ -136,15 +204,16 @@ export default function ProfileSetup({
           className="inline-flex items-center gap-1.5 text-neutral-400 hover:text-white text-sm mb-6 transition cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
-          Volver
+          Volver al Panel
         </button>
       )}
 
+      {/* Header Info */}
       <motion.div 
         variants={formSectionVariants}
         className="flex items-center gap-3.5 mb-8"
       >
-        <div className="p-3 bg-emerald-500/10 text-emerald-400 rounded-xl border border-emerald-500/20">
+        <div className="p-3 bg-emerald-500/10 text-emerald-400 rounded-xl border border-emerald-500/20 shadow-lg shadow-emerald-500/5">
           <Shield className="w-6 h-6 animate-pulse" />
         </div>
         <div>
@@ -152,122 +221,233 @@ export default function ProfileSetup({
             Ficha Oficial del Jugador
           </h1>
           <p className="text-xs text-neutral-400">
-            Completa tus especificaciones técnicas para generar tu perfil scout.
+            Completa tus especificaciones técnicas para generar tu perfil scout. Puedes dejar campos en blanco para rellenar cómodamente, pero deberás completarlos antes de continuar.
           </p>
         </div>
       </motion.div>
 
-      <form onSubmit={handleSave} className="space-y-6">
+      {/* Global alert box when errors are found */}
+      {hasSubmitted && Object.keys(errors).length > 0 && (
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl flex items-start gap-3 text-sm error-indicator-target text-left"
+        >
+          <AlertCircle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5 animate-bounce" />
+          <div>
+            <h4 className="font-extrabold text-rose-400 uppercase tracking-wider text-xs">Faltan Datos Obligatorios</h4>
+            <p className="text-[11px] text-neutral-300 mt-1 font-light leading-relaxed">
+              Completa los campos marcados en rojo con tu información técnica real para guardar la ficha de jugador con éxito.
+            </p>
+          </div>
+        </motion.div>
+      )}
+
+      <form onSubmit={handleSave} className="space-y-6" noValidate>
         {/* Core Profile Card */}
         <motion.div 
           variants={formSectionVariants}
-          className="glass p-6 space-y-4"
+          className="glass p-6 space-y-5"
         >
           <h2 className="text-sm font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-2">
-            <User className="w-4 h-4" />
-            Datos Básicos
+            <User className="w-4 h-4 text-emerald-400" />
+            Datos Básicos del Jugador
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Nombre input */}
             <div>
-              <label className="block text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-1.5">
-                Nombre Completo o Apodo <span className="text-emerald-400">*</span>
+              <label className="block text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                Nombre Completo o Apodo <span className="text-rose-500 font-bold">*</span>
               </label>
               <input
                 type="text"
-                placeholder="Ej. Agus"
-                required
+                placeholder="Ej. Agus11"
                 value={nombre}
-                onChange={(e) => setNombre(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 focus:border-emerald-500 rounded-xl px-4 py-3 text-white placeholder-neutral-600 focus:outline-none transition text-sm"
+                onChange={(e) => {
+                  setNombre(e.target.value);
+                  if (errors.nombre) {
+                    setErrors(prev => ({ ...prev, nombre: undefined }));
+                  }
+                }}
+                className={`w-full bg-white/5 border focus:outline-none rounded-xl px-4 py-3 text-white placeholder-neutral-600 transition-all text-sm font-semibold ${
+                  hasSubmitted && errors.nombre
+                    ? 'border-rose-500 bg-rose-500/5 focus:border-rose-400 focus:ring-1 focus:ring-rose-500/25'
+                    : 'border-white/10 focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/20 focus:bg-white/10'
+                }`}
               />
-              {hasSubmitted && !nombre.trim() && (
-                <p className="text-xs text-rose-500 mt-1">El nombre es obligatorio.</p>
+              {hasSubmitted && errors.nombre && (
+                <p className="text-xs text-rose-400 flex items-center gap-1.5 mt-1.5 font-medium pl-1">
+                  <AlertCircle className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+                  {errors.nombre}
+                </p>
               )}
             </div>
 
+            {/* Club input */}
             <div>
-              <label className="block text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-1.5">
-                Club Actual u Equipo <span className="text-emerald-400">*</span>
+              <label className="block text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                Club Actual u Equipo <span className="text-rose-500 font-bold">*</span>
               </label>
               <input
                 type="text"
-                placeholder="Ej. Club Deportivo San Lorenzo"
-                required
+                placeholder="Ej. San Lorenzo de Almagro"
                 value={club}
-                onChange={(e) => setClub(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 focus:border-emerald-500 rounded-xl px-4 py-3 text-white placeholder-neutral-600 focus:outline-none transition text-sm"
+                onChange={(e) => {
+                  setClub(e.target.value);
+                  if (errors.club) {
+                    setErrors(prev => ({ ...prev, club: undefined }));
+                  }
+                }}
+                className={`w-full bg-white/5 border focus:outline-none rounded-xl px-4 py-3 text-white placeholder-neutral-600 transition-all text-sm font-semibold ${
+                  hasSubmitted && errors.club
+                    ? 'border-rose-500 bg-rose-500/5 focus:border-rose-400 focus:ring-1 focus:ring-rose-500/25'
+                    : 'border-white/10 focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/20 focus:bg-white/10'
+                }`}
               />
-              {hasSubmitted && !club.trim() && (
-                <p className="text-xs text-rose-500 mt-1">El club es obligatorio.</p>
+              {hasSubmitted && errors.club && (
+                <p className="text-xs text-rose-400 flex items-center gap-1.5 mt-1.5 font-medium pl-1">
+                  <AlertCircle className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+                  {errors.club}
+                </p>
               )}
             </div>
           </div>
 
+          {/* Anthropometric inputs (Edad, Peso, Altura) */}
           <div className="grid grid-cols-3 gap-3 pt-2">
+            {/* Edad input */}
             <div>
-              <label className="block text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-1.5">
-                Edad
+              <label className="block text-[11px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-1.5 text-center">
+                Edad <span className="text-rose-500 font-bold">*</span>
               </label>
               <input
                 type="number"
-                min="5"
-                max="99"
+                placeholder="Ej. 18"
                 value={edad}
-                onChange={(e) => setEdad(Math.max(1, parseInt(e.target.value) || 0))}
-                className="w-full bg-white/5 border border-white/10 focus:border-emerald-500 rounded-xl px-3 py-2.5 text-center text-white focus:outline-none text-sm"
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === '') {
+                    setEdad('');
+                  } else {
+                    const parsed = parseInt(val);
+                    setEdad(isNaN(parsed) ? '' : parsed);
+                  }
+                  if (errors.edad) {
+                    setErrors(prev => ({ ...prev, edad: undefined }));
+                  }
+                }}
+                className={`w-full bg-white/5 border focus:outline-none rounded-xl py-3 text-center text-white placeholder-neutral-600 transition-all text-sm font-bold ${
+                  hasSubmitted && errors.edad
+                    ? 'border-rose-500 bg-rose-500/5 focus:border-rose-400 focus:ring-1 focus:ring-rose-500/25'
+                    : 'border-white/10 focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/20 focus:bg-white/10'
+                }`}
               />
             </div>
 
+            {/* Peso input */}
             <div>
-              <label className="block text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-1.5 font-sans">
-                Peso (kg)
+              <label className="block text-[11px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-1.5 text-center">
+                Peso (kg) <span className="text-rose-500 font-bold">*</span>
               </label>
               <input
                 type="number"
-                min="20"
-                max="200"
+                placeholder="Ej. 72"
                 value={peso}
-                onChange={(e) => setPeso(Math.max(1, parseInt(e.target.value) || 0))}
-                className="w-full bg-white/5 border border-white/10 focus:border-emerald-500 rounded-xl px-3 py-2.5 text-center text-white focus:outline-none text-sm"
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === '') {
+                    setPeso('');
+                  } else {
+                    const parsed = parseInt(val);
+                    setPeso(isNaN(parsed) ? '' : parsed);
+                  }
+                  if (errors.peso) {
+                    setErrors(prev => ({ ...prev, peso: undefined }));
+                  }
+                }}
+                className={`w-full bg-white/5 border focus:outline-none rounded-xl py-3 text-center text-white placeholder-neutral-600 transition-all text-sm font-bold ${
+                  hasSubmitted && errors.peso
+                    ? 'border-rose-500 bg-rose-500/5 focus:border-rose-400 focus:ring-1 focus:ring-rose-500/25'
+                    : 'border-white/10 focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/20 focus:bg-white/10'
+                }`}
               />
             </div>
 
+            {/* Altura input */}
             <div>
-              <label className="block text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-1.5">
-                Altura (cm)
+              <label className="block text-[11px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-1.5 text-center">
+                Altura (cm) <span className="text-rose-500 font-bold">*</span>
               </label>
               <input
                 type="number"
-                min="50"
-                max="250"
+                placeholder="Ej. 178"
                 value={altura}
-                onChange={(e) => setAltura(Math.max(1, parseInt(e.target.value) || 0))}
-                className="w-full bg-white/5 border border-white/10 focus:border-emerald-500 rounded-xl px-3 py-2.5 text-center text-white focus:outline-none text-sm"
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === '') {
+                    setAltura('');
+                  } else {
+                    const parsed = parseInt(val);
+                    setAltura(isNaN(parsed) ? '' : parsed);
+                  }
+                  if (errors.altura) {
+                    setErrors(prev => ({ ...prev, altura: undefined }));
+                  }
+                }}
+                className={`w-full bg-white/5 border focus:outline-none rounded-xl py-3 text-center text-white placeholder-neutral-600 transition-all text-sm font-bold ${
+                  hasSubmitted && errors.altura
+                    ? 'border-rose-500 bg-rose-500/5 focus:border-rose-400 focus:ring-1 focus:ring-rose-500/25'
+                    : 'border-white/10 focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/20 focus:bg-white/10'
+                }`}
               />
             </div>
           </div>
+
+          {/* Sub-errors inside the anthropometrics block */}
+          {hasSubmitted && (errors.edad || errors.peso || errors.altura) && (
+            <div className="bg-rose-500/5 border border-rose-500/10 rounded-xl p-3 flex flex-col gap-1.5 text-left text-[11px] pl-4">
+              {errors.edad && (
+                <p className="text-rose-400 flex items-center gap-1.5 font-medium">
+                  <AlertCircle className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+                  <strong>Edad:</strong> {errors.edad}
+                </p>
+              )}
+              {errors.peso && (
+                <p className="text-rose-400 flex items-center gap-1.5 font-medium">
+                  <AlertCircle className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+                  <strong>Peso:</strong> {errors.peso}
+                </p>
+              )}
+              {errors.altura && (
+                <p className="text-rose-400 flex items-center gap-1.5 font-medium">
+                  <AlertCircle className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+                  <strong>Altura:</strong> {errors.altura}
+                </p>
+              )}
+            </div>
+          )}
 
           {/* BMI (IMC) display widget */}
           <div className="bg-white/5 rounded-xl p-4 border border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm mt-4">
             <div className="flex items-start gap-2">
               <Info className="w-4 h-4 text-neutral-400 shrink-0 mt-0.5" />
-              <div>
+              <div className="text-left">
                 <span className="block text-xs font-bold text-neutral-400 uppercase tracking-wider">
                   Cálculo de IMC Automático
                 </span>
-                <span className="text-xs text-neutral-500">
-                  Fórmula matemática basada en tu antropometría actual.
+                <span className="text-[10px] text-neutral-500 leading-normal">
+                  Cargado automáticamente en tiempo real basándose en tu peso y estatura.
                 </span>
               </div>
             </div>
             
             <div className="flex items-center gap-3 self-end sm:self-center">
               <div className="text-right">
-                <span className="text-xs text-neutral-400 block">Tu IMC:</span>
+                <span className="text-[10px] text-neutral-400 block uppercase tracking-wider">Tu IMC:</span>
                 <span className="text-lg font-black text-white">{imc > 0 ? imc : '--'}</span>
               </div>
-              <span className={`px-2.5 py-1 rounded-lg border text-xs font-bold uppercase ${imcStatus.color}`}>
+              <span className={`px-2.5 py-1 rounded-lg border text-[10px] tracking-wider uppercase ${imcStatus.color}`}>
                 {imcStatus.label}
               </span>
             </div>
@@ -280,13 +460,13 @@ export default function ProfileSetup({
           className="glass p-6 space-y-5"
         >
           <h2 className="text-sm font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-2">
-            <Sparkles className="w-4 h-4" />
-            Atributos de Cancha
+            <Sparkles className="w-4 h-4 text-emerald-400 animate-spin" style={{ animationDuration: '6s' }} />
+            Atributos de Campo del Jugador
           </h2>
 
           <div>
-            <label className="block text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-2">
-              Pierna Hábil
+            <label className="block text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-2 text-left">
+              Pierna Hábil de Cancha
             </label>
             <div className="grid grid-cols-2 gap-3">
               <motion.button
@@ -296,8 +476,8 @@ export default function ProfileSetup({
                 onClick={() => setPiernaHabil('Diestro')}
                 className={`py-3 px-4 rounded-xl text-sm font-bold uppercase transition border ${
                   piernaHabil === 'Diestro'
-                    ? 'bg-emerald-500 border-emerald-500 text-black shadow-lg shadow-emerald-500/20 font-black'
-                    : 'bg-white/5 border-white/10 hover:border-white/20 text-neutral-400 cursor-pointer'
+                    ? 'bg-emerald-500 border-emerald-500 text-black shadow-lg shadow-emerald-500/10 font-black'
+                    : 'bg-white/5 border-white/10 hover:border-white/20 text-neutral-450 cursor-pointer'
                 }`}
               >
                 Diestro
@@ -309,8 +489,8 @@ export default function ProfileSetup({
                 onClick={() => setPiernaHabil('Zurdo')}
                 className={`py-3 px-4 rounded-xl text-sm font-bold uppercase transition border ${
                   piernaHabil === 'Zurdo'
-                    ? 'bg-emerald-500 border-emerald-500 text-black shadow-lg shadow-emerald-500/20 font-black'
-                    : 'bg-white/5 border-white/10 hover:border-white/20 text-neutral-400 cursor-pointer'
+                    ? 'bg-emerald-500 border-emerald-500 text-black shadow-lg shadow-emerald-500/10 font-black'
+                    : 'bg-white/5 border-white/10 hover:border-white/20 text-neutral-450 cursor-pointer'
                 }`}
               >
                 Zurdo
@@ -319,8 +499,8 @@ export default function ProfileSetup({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-2">
-              Posición Táctica Específica <span className="text-emerald-400">*</span>
+            <label className="block text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-2 text-left flex items-center gap-1">
+              Posición Táctica Específica <span className="text-emerald-400 font-mono">*</span>
             </label>
             
             {/* Elegant Segmented Tabs for Categories */}
@@ -369,22 +549,26 @@ export default function ProfileSetup({
               })}
             </div>
             
-            <p className="text-[10px] text-neutral-500 mt-1.5 pl-1 italic">
+            <p className="text-[10px] text-neutral-500 mt-1.5 pl-1 italic text-left">
               * Cambia de categoría arriba para explorar otras posiciones en el campo.
             </p>
           </div>
 
           <div>
             <div className="flex justify-between items-center mb-1">
-              <label className="block text-xs font-semibold text-neutral-400 uppercase tracking-wider">
-                Habilidades a destacar (Selecciona de 2 a 5) <span className="text-emerald-400">*</span>
+              <label className="block text-xs font-semibold text-neutral-400 uppercase tracking-wider text-left flex items-center gap-1">
+                Habilidades destacables <span className="text-emerald-400 font-bold">*</span>
               </label>
-              <span className="text-xs text-emerald-400 font-bold">
-                {habilidades.length} / 5
+              <span className={`text-xs font-extrabold px-2 py-0.5 rounded-md ${
+                habilidades.length < 2 || habilidades.length > 5
+                  ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                  : 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20'
+              }`}>
+                {habilidades.length} / 5 Seleccionadas (Mín. 2)
               </span>
             </div>
-            <p className="text-xs text-neutral-500 mb-3.5">
-              Tus mayores destrezas en el campo de juego.
+            <p className="text-left text-xs text-neutral-500 mb-3.5">
+              Escoge las mayores destrezas que posees para tus tácticas en el campo de juego.
             </p>
 
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
@@ -399,8 +583,8 @@ export default function ProfileSetup({
                     onClick={() => handleToggleHabilidad(skill)}
                     className={`py-2 px-1 rounded-lg border text-center transition overflow-hidden text-ellipsis whitespace-nowrap text-xs font-medium cursor-pointer ${
                       isSelected
-                        ? 'bg-emerald-500 border-emerald-500 text-neutral-950 font-bold shadow shadow-emerald-500/20'
-                        : 'bg-white/5 border-white/10 hover:border-white/25 text-neutral-400'
+                        ? 'bg-emerald-500 border-emerald-500 text-neutral-950 font-black shadow shadow-emerald-500/20'
+                        : 'bg-white/5 border-white/10 hover:border-white/25 text-neutral-450'
                     }`}
                   >
                     {skill}
@@ -409,9 +593,10 @@ export default function ProfileSetup({
               })}
             </div>
 
-            {hasSubmitted && (habilidades.length < 2 || habilidades.length > 5) && (
-              <p className="text-xs text-rose-500 mt-2">
-                Debes elegir entre <strong className="font-bold">dos (2)</strong> y <strong className="font-bold">cinco (5)</strong> habilidades destacadas para continuar.
+            {hasSubmitted && errors.habilidades && (
+              <p className="text-xs text-rose-400 flex items-center gap-1.5 bg-rose-500/10 border border-rose-500/20 p-3 rounded-xl mt-3 font-medium text-left">
+                <AlertCircle className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+                {errors.habilidades}
               </p>
             )}
           </div>
@@ -422,9 +607,9 @@ export default function ProfileSetup({
           whileHover={{ scale: 1.01 }}
           whileTap={{ scale: 0.99 }}
           type="submit"
-          className="w-full bg-emerald-500 hover:bg-emerald-400 active:scale-[0.99] text-neutral-950 font-black py-4 px-6 rounded-xl transition duration-200 shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-2 cursor-pointer text-base uppercase"
+          className="w-full bg-emerald-500 hover:bg-emerald-400 active:scale-[0.99] text-neutral-950 font-black py-4 px-6 rounded-xl transition duration-200 shadow-xl shadow-emerald-500/15 flex items-center justify-center gap-2 cursor-pointer text-base uppercase tracking-wider"
         >
-          {initialProfile ? 'Guardar Cambios' : 'Guardar Ficha de Jugador'}
+          {initialProfile ? 'Guardar Cambios Oficiales' : 'Guardar y Continuar'}
         </motion.button>
       </form>
     </motion.div>

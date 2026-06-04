@@ -63,6 +63,8 @@ export interface ActivityLog {
   fecha: string; // ISO date string (YYYY-MM-DD)
   goles: number; // 0 for Entrenamiento
   asistencias: number; // 0 for Entrenamiento
+  atajadas?: number; // Goalkeeper: saves
+  vallaInvicta?: boolean; // Goalkeeper: clean sheet
   reflexion: string;
   timestamp: number;
 }

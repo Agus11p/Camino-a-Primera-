@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ActivityLog } from '../types';
+import { ActivityLog, PlayerProfile } from '../types';
 import { 
   Award, 
   Trash2, 
@@ -14,15 +14,18 @@ interface HistoryFeedProps {
   logs: ActivityLog[];
   onEdit: (log: ActivityLog) => void;
   onDelete: (id: string) => void;
+  profile?: PlayerProfile | null;
 }
 
 export default function HistoryFeed({
   logs,
   onEdit,
   onDelete,
+  profile,
 }: HistoryFeedProps) {
   // Filter state
   const [filter, setFilter] = useState<'Todos' | 'Partidos' | 'Entrenamientos'>('Todos');
+  const isArquero = profile?.posicion === 'Arquero';
 
   // Format YYYY-MM-DD cleanly, eg "Sábado, 28 de Mayo"
   const formatDateSpanish = (isoString: string) => {
@@ -144,25 +147,47 @@ export default function HistoryFeed({
 
                     {/* Stats details: only relevant if isMatch */}
                     {isMatch && (
-                      <div className="flex items-center gap-4 py-1.5">
-                        <div className="bg-white/5 border border-white/10 rounded-lg px-3 py-1 text-center">
-                          <span className="block text-[8px] font-bold text-neutral-500 uppercase tracking-widest mb-0.5">
-                            Goles
-                          </span>
-                          <span className="text-sm font-black text-white italic">
-                            {log.goles}
-                          </span>
-                        </div>
+                      isArquero ? (
+                        <div className="flex items-center gap-4 py-1.5">
+                          <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-3 py-1.5 text-center min-w-[75px]">
+                            <span className="block text-[8px] font-black text-emerald-400 uppercase tracking-widest mb-0.5">
+                              👐 Atajadas
+                            </span>
+                            <span className="text-sm font-black text-white italic">
+                              {log.atajadas || 0}
+                            </span>
+                          </div>
 
-                        <div className="bg-white/5 border border-white/10 rounded-lg px-3 py-1 text-center">
-                          <span className="block text-[8px] font-bold text-neutral-400 uppercase tracking-widest mb-0.5">
-                            Asistencias
-                          </span>
-                          <span className="text-sm font-black text-amber-500 italic">
-                            {log.asistencias}
-                          </span>
+                          <div className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-center min-w-[100px]">
+                            <span className="block text-[8px] font-bold text-neutral-400 uppercase tracking-widest mb-0.5">
+                              🛡️ Arco en Cero
+                            </span>
+                            <span className={`text-xs font-black uppercase ${log.vallaInvicta ? 'text-emerald-400' : 'text-neutral-500'}`}>
+                              {log.vallaInvicta ? 'Sí ✅' : 'No ❌'}
+                            </span>
+                          </div>
                         </div>
-                      </div>
+                      ) : (
+                        <div className="flex items-center gap-4 py-1.5">
+                          <div className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-center">
+                            <span className="block text-[8px] font-bold text-neutral-500 uppercase tracking-widest mb-0.5">
+                              Goles
+                            </span>
+                            <span className="text-sm font-black text-white italic">
+                              {log.goles}
+                            </span>
+                          </div>
+
+                          <div className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-center">
+                            <span className="block text-[8px] font-bold text-neutral-400 uppercase tracking-widest mb-0.5">
+                              Asistencias
+                            </span>
+                            <span className="text-sm font-black text-amber-500 italic">
+                              {log.asistencias}
+                            </span>
+                          </div>
+                        </div>
+                      )
                     )}
 
                     {/* Reflection body */}

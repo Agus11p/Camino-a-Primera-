@@ -10,6 +10,7 @@ import HistoryFeed from './components/HistoryFeed';
 import ProfileCardView from './components/ProfileCardView';
 import DailyLogModal from './components/DailyLogModal';
 import UnrespiroAuth from './components/UnrespiroAuth';
+import AICoachSection from './components/AICoachSection';
 import { supabase, isSupabaseConfigured } from './lib/supabase';
 
 import { 
@@ -145,6 +146,8 @@ export default function App() {
             fecha: l.fecha,
             goles: l.goles || 0,
             asistencias: l.asistencias || 0,
+            atajadas: l.atajadas || 0,
+            vallaInvicta: !!l.valla_invicta,
             reflexion: l.reflexion || '',
             timestamp: l.timestamp || Date.now()
           })));
@@ -199,7 +202,7 @@ export default function App() {
   });
 
   // 2. Navigation & Modal States
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'goals' | 'charts' | 'history' | 'profile'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'goals' | 'history' | 'charts' | 'profile' | 'coach'>('dashboard');
   const [showSetup, setShowSetup] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [editLogTarget, setEditLogTarget] = useState<ActivityLog | null>(null);
@@ -320,6 +323,8 @@ export default function App() {
           fecha: newLogData.fecha,
           goles: Number(newLogData.goles || 0),
           asistencias: Number(newLogData.asistencias || 0),
+          atajadas: Number(newLogData.atajadas || 0),
+          valla_invicta: !!newLogData.vallaInvicta,
           reflexion: newLogData.reflexion || '',
           timestamp: targetTimestamp
         });
@@ -539,7 +544,7 @@ export default function App() {
                     )}
 
                     {activeTab === 'charts' && (
-                      <StatisticsCharts logs={logs} />
+                      <StatisticsCharts logs={logs} profile={profile} />
                     )}
 
                     {activeTab === 'history' && (
@@ -547,6 +552,7 @@ export default function App() {
                         logs={logs}
                         onEdit={handleEditLogTrigger}
                         onDelete={handleDeleteLog}
+                        profile={profile}
                       />
                     )}
 
@@ -554,6 +560,13 @@ export default function App() {
                       <ProfileCardView
                         profile={profile!}
                         onEditProfile={() => setShowSetup(true)}
+                      />
+                    )}
+
+                    {activeTab === 'coach' && (
+                      <AICoachSection
+                        profile={profile!}
+                        logs={logs}
                       />
                     )}
                   </motion.div>
@@ -567,7 +580,7 @@ export default function App() {
       {/* Persistent Bottom Tab Shell Bar */}
       {currentView === 'app' && (
         <nav className="fixed bottom-0 left-0 right-0 bg-neutral-900/90 backdrop-blur-md border-t border-neutral-800 py-2.5 z-40 max-w-2xl mx-auto w-full px-4 rounded-t-xl">
-          <div className="grid grid-cols-5 gap-1">
+          <div className="grid grid-cols-6 gap-0.5 sm:gap-1">
             <button
               onClick={() => setActiveTab('dashboard')}
               className={`flex flex-col items-center justify-center gap-1 transition cursor-pointer ${
@@ -575,7 +588,17 @@ export default function App() {
               }`}
             >
               <Trophy className="w-5 h-5 shrink-0" />
-              <span className="text-[10px] font-bold uppercase tracking-wider">Inicio</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider font-sans">Inicio</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('coach')}
+              className={`flex flex-col items-center justify-center gap-1 transition cursor-pointer ${
+                activeTab === 'coach' ? 'text-emerald-400 font-extrabold scale-[1.03]' : 'text-neutral-500 hover:text-neutral-400'
+              }`}
+            >
+              <Sparkles className="w-5 h-5 shrink-0 text-emerald-400" />
+              <span className="text-[10px] font-bold uppercase tracking-wider font-sans">Míster</span>
             </button>
 
             <button
@@ -595,7 +618,7 @@ export default function App() {
               }`}
             >
               <Calendar className="w-5 h-5 shrink-0" />
-              <span className="text-[10px] font-bold uppercase tracking-wider">Diario</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider font-sans">Diario</span>
             </button>
 
             <button
@@ -605,7 +628,7 @@ export default function App() {
               }`}
             >
               <BarChart2 className="w-5 h-5 shrink-0" />
-              <span className="text-[10px] font-bold uppercase tracking-wider">Estads</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider font-sans">Estads</span>
             </button>
 
             <button
@@ -615,7 +638,7 @@ export default function App() {
               }`}
             >
               <User className="w-5 h-5 shrink-0" />
-              <span className="text-[10px] font-bold uppercase tracking-wider">Ficha</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider font-sans">Ficha</span>
             </button>
           </div>
         </nav>
@@ -630,6 +653,7 @@ export default function App() {
         }}
         onSave={handleCreateOrUpdateLog}
         editLog={editLogTarget}
+        profile={profile}
       />
     </div>
   );
