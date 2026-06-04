@@ -43,6 +43,9 @@ interface PositionDetails {
   presion: string;
   heatmapCoords: { cx: number; cy: number; r: number; grad: string };
   coords: { x: number; y: number };
+  pivoteCoords: { x: number; y: number };
+  centralCoords: { x: number; y: number };
+  rivalCoords: { x: number; y: number };
 }
 
 // 1. Detailed positional tactical database
@@ -56,8 +59,11 @@ const DETALLES_POR_POSICION: Record<string, PositionDetails> = {
     ],
     asociacion: "Asociarse rápido con los laterales o filtrando un balón raso directo al pivote creativo.",
     presion: "Achique rápido abriendo los brazos y conteniendo el cuerpo de pie en mano a mano.",
-    heatmapCoords: { cx: 50, cy: 90, r: 16, grad: "glowArquero" },
-    coords: { x: 50, y: 88 }
+    heatmapCoords: { cx: 50, cy: 120, r: 18, grad: "glowArquero" },
+    coords: { x: 50, y: 122 },
+    pivoteCoords: { x: 50, y: 82 },
+    centralCoords: { x: 32, y: 104 },
+    rivalCoords: { x: 50, y: 45 }
   },
   'Central Izquierdo': {
     rol: "Zaguero de Salida & Cobertura Izquierda",
@@ -68,8 +74,11 @@ const DETALLES_POR_POSICION: Record<string, PositionDetails> = {
     ],
     asociacion: "Asegurar circulación segura al pivote o descolgar un cambio de juego largo al extremo opuesto.",
     presion: "Temporizar al atacante sin lanzarse; esperar su error de perfilación y trabar limpio.",
-    heatmapCoords: { cx: 35, cy: 75, r: 18, grad: "glowDefensas" },
-    coords: { x: 35, y: 72 }
+    heatmapCoords: { cx: 32, cy: 104, r: 20, grad: "glowDefensas" },
+    coords: { x: 32, y: 104 },
+    pivoteCoords: { x: 50, y: 82 },
+    centralCoords: { x: 68, y: 104 },
+    rivalCoords: { x: 30, y: 70 }
   },
   'Central Derecho': {
     rol: "Zaguero de Salida & Cobertura Derecha",
@@ -80,8 +89,11 @@ const DETALLES_POR_POSICION: Record<string, PositionDetails> = {
     ],
     asociacion: "Asociarse en corto al lateral o filtrar directo al enganche creativo de cara.",
     presion: "Cerrar espacio interior forzando al punta a salir hacia las bandas congestionadas.",
-    heatmapCoords: { cx: 65, cy: 75, r: 18, grad: "glowDefensas" },
-    coords: { x: 65, y: 72 }
+    heatmapCoords: { cx: 68, cy: 104, r: 20, grad: "glowDefensas" },
+    coords: { x: 68, y: 104 },
+    pivoteCoords: { x: 50, y: 82 },
+    centralCoords: { x: 32, y: 104 },
+    rivalCoords: { x: 70, y: 70 }
   },
   'Lateral Izquierdo': {
     rol: "Locomotora de Banda & Amplitud",
@@ -92,20 +104,26 @@ const DETALLES_POR_POSICION: Record<string, PositionDetails> = {
     ],
     asociacion: "Tirar paredes rápidas por la cal o descargar al mediocentro de espaldas.",
     presion: "Bloquear carril de regate interior y forzar balonazos del contrario.",
-    heatmapCoords: { cx: 15, cy: 65, r: 20, grad: "glowCentros" },
-    coords: { x: 15, y: 65 }
+    heatmapCoords: { cx: 14, cy: 92, r: 22, grad: "glowCentros" },
+    coords: { x: 14, y: 92 },
+    pivoteCoords: { x: 50, y: 82 },
+    centralCoords: { x: 32, y: 104 },
+    rivalCoords: { x: 16, y: 60 }
   },
   'Lateral Derecho': {
     rol: "Locomotora de Banda & Amplitud",
     pautas: [
-      "Proyección diestra: Doble como opción de pase cuando se junte la marca sobre el extremo.",
+      "Proyección diestra: Doble como opción de pase when se junte la marca sobre el extremo.",
       "Cierre de zaga: Cubra el segundo poste en centros cruzados que vengan del otro costado.",
       "Paso al frente: Presione al extremo receptor para forzar que descargue incómodo."
     ],
     asociacion: "Filtrar pases lineales a banda o pivotear en corto con el volante defensivo.",
     presion: "Impedir centros cómodos tapando el esférico con presión activa de brazos y piernas.",
-    heatmapCoords: { cx: 85, cy: 65, r: 20, grad: "glowCentros" },
-    coords: { x: 85, y: 65 }
+    heatmapCoords: { cx: 86, cy: 92, r: 22, grad: "glowCentros" },
+    coords: { x: 86, y: 92 },
+    pivoteCoords: { x: 50, y: 82 },
+    centralCoords: { x: 68, y: 104 },
+    rivalCoords: { x: 84, y: 60 }
   },
   'Mediocampista Defensivo': {
     rol: "Pivote Organizador & Ancla Táctica",
@@ -116,8 +134,11 @@ const DETALLES_POR_POSICION: Record<string, PositionDetails> = {
     ],
     asociacion: "Repartir juego a las bandas en transiciones rápidas o filtrar pase vertical rasante.",
     presion: "Cerrar con astucia las líneas de pase centrales haciendo sombra táctica.",
-    heatmapCoords: { cx: 50, cy: 55, r: 21, grad: "glowCentros" },
-    coords: { x: 50, y: 55 }
+    heatmapCoords: { cx: 50, cy: 82, r: 24, grad: "glowCentros" },
+    coords: { x: 50, y: 82 },
+    pivoteCoords: { x: 50, y: 56 },
+    centralCoords: { x: 32, y: 104 },
+    rivalCoords: { x: 50, y: 68 }
   },
   'Mediocampista Ofensivo': {
     rol: "Enganche Creativo & Habilitador",
@@ -128,8 +149,11 @@ const DETALLES_POR_POSICION: Record<string, PositionDetails> = {
     ],
     asociacion: "Buscar paredes extremas en la frontal del área o pelotas entrelíneas de gol.",
     presion: "Liderar la presión de bloque medio, hostigando la distribución del mediocentro rival.",
-    heatmapCoords: { cx: 50, cy: 38, r: 21, grad: "glowEspecialidades" },
-    coords: { x: 50, y: 38 }
+    heatmapCoords: { cx: 50, cy: 56, r: 24, grad: "glowEspecialidades" },
+    coords: { x: 50, y: 56 },
+    pivoteCoords: { x: 50, y: 82 },
+    centralCoords: { x: 50, y: 24 },
+    rivalCoords: { x: 50, y: 44 }
   },
   'Mediocampista Externo Izquierdo': {
     rol: "Volante Conector de Banda & Equilibrio",
@@ -140,8 +164,11 @@ const DETALLES_POR_POSICION: Record<string, PositionDetails> = {
     ],
     asociacion: "Buscar entregas cortas de descompresión o pelotas flotadas a bandas.",
     presion: "Presionar la recepción del lateral rival obligándole a dividir el esférico.",
-    heatmapCoords: { cx: 22, cy: 45, r: 20, grad: "glowCentros" },
-    coords: { x: 22, y: 45 }
+    heatmapCoords: { cx: 20, cy: 70, r: 22, grad: "glowCentros" },
+    coords: { x: 20, y: 70 },
+    pivoteCoords: { x: 50, y: 82 },
+    centralCoords: { x: 14, y: 92 },
+    rivalCoords: { x: 24, y: 50 }
   },
   'Mediocampista Externo Derecho': {
     rol: "Volante Conector de Banda & Equilibrio",
@@ -150,10 +177,13 @@ const DETALLES_POR_POSICION: Record<string, PositionDetails> = {
       "Alternar ritmo: Frene la jugada para circular de cara o inyecte velocidad explosiva.",
       "Cierre interior: Cubra pasillos si el mediocentro defensivo salta a presionar."
     ],
-    asociacion: "Combinar con el extremo por linea o pivotar con el volante recuperador.",
+    asociacion: "Combinar con el extremo por linea o pivotar with el volante recuperador.",
     presion: "Ahogar el circuito de pase del central rival tapando su volante interno de recepción.",
-    heatmapCoords: { cx: 78, cy: 45, r: 20, grad: "glowCentros" },
-    coords: { x: 78, y: 45 }
+    heatmapCoords: { cx: 80, cy: 70, r: 22, grad: "glowCentros" },
+    coords: { x: 80, y: 70 },
+    pivoteCoords: { x: 50, y: 82 },
+    centralCoords: { x: 86, y: 92 },
+    rivalCoords: { x: 76, y: 50 }
   },
   'Extremo Izquierdo': {
     rol: "Puñal de Banda & Desequilibrio Zurdo",
@@ -164,8 +194,11 @@ const DETALLES_POR_POSICION: Record<string, PositionDetails> = {
     ],
     asociacion: "Centros rasos venenosos para el punta o paredes agresivas con el mediocentro ofensivo.",
     presion: "Tapar salida limpia de los centrales tapando el pase cómodo al lateral contrario.",
-    heatmapCoords: { cx: 18, cy: 22, r: 20, grad: "glowEspecialidades" },
-    coords: { x: 18, y: 22 }
+    heatmapCoords: { cx: 18, cy: 38, r: 22, grad: "glowEspecialidades" },
+    coords: { x: 18, y: 38 },
+    pivoteCoords: { x: 50, y: 56 },
+    centralCoords: { x: 14, y: 92 },
+    rivalCoords: { x: 15, y: 24 }
   },
   'Extremo Derecho': {
     rol: "Puñal de Banda & Desequilibrio Diestro",
@@ -176,8 +209,11 @@ const DETALLES_POR_POSICION: Record<string, PositionDetails> = {
     ],
     asociacion: "Descargar pases rasos al punta o colgar pelotas templadas en área de cabeza.",
     presion: "Asfixiar inmediatamente la salida vertical del lateral rival mordiendo los toques de marca.",
-    heatmapCoords: { cx: 82, cy: 22, r: 20, grad: "glowEspecialidades" },
-    coords: { x: 82, y: 22 }
+    heatmapCoords: { cx: 82, cy: 38, r: 22, grad: "glowEspecialidades" },
+    coords: { x: 82, y: 38 },
+    pivoteCoords: { x: 50, y: 56 },
+    centralCoords: { x: 86, y: 92 },
+    rivalCoords: { x: 85, y: 24 }
   },
   'Mediapunta': {
     rol: "Delantero de Apoyo & Segunda Punta",
@@ -188,8 +224,11 @@ const DETALLES_POR_POSICION: Record<string, PositionDetails> = {
     ],
     asociacion: "Combinación de balones aéreos al desmarque, o paredes rápidas para disparar libres.",
     presion: "Dificultar la primera salida limpia de centrales hostigando sus perfiles.",
-    heatmapCoords: { cx: 50, cy: 25, r: 20, grad: "glowEspecialidades" },
-    coords: { x: 50, y: 25 }
+    heatmapCoords: { cx: 50, cy: 42, r: 22, grad: "glowEspecialidades" },
+    coords: { x: 50, y: 42 },
+    pivoteCoords: { x: 50, y: 56 },
+    centralCoords: { x: 50, y: 24 },
+    rivalCoords: { x: 66, y: 30 }
   },
   'Delantero Centro': {
     rol: "El Matador del Área & Referente",
@@ -200,8 +239,11 @@ const DETALLES_POR_POSICION: Record<string, PositionDetails> = {
     ],
     asociacion: "Retener balones de espaldas con solidez para dar tiempo al arribo de extremos.",
     presion: "Asfixiar constantemente al portero en salida y taponar pases internos del central lento.",
-    heatmapCoords: { cx: 50, cy: 15, r: 19, grad: "glowDelantero" },
-    coords: { x: 50, y: 15 }
+    heatmapCoords: { cx: 50, cy: 24, r: 20, grad: "glowDelantero" },
+    coords: { x: 50, y: 24 },
+    pivoteCoords: { x: 50, y: 56 },
+    centralCoords: { x: 82, y: 38 },
+    rivalCoords: { x: 42, y: 15 }
   }
 };
 
@@ -443,7 +485,12 @@ export default function AICoachSection({ profile, logs }: AICoachSectionProps) {
       });
       const data = await res.json();
       if (data?.success && data?.quiz) {
-        setCurrentQuiz(data.quiz);
+        // Enforce that correct answer is ALWAYS index 0 (Option A)
+        const adjustedQuiz = {
+          ...data.quiz,
+          correcto: 0
+        };
+        setCurrentQuiz(adjustedQuiz);
       } else {
         throw new Error('Could not parse quiz from backend');
       }
@@ -559,8 +606,11 @@ export default function AICoachSection({ profile, logs }: AICoachSectionProps) {
     ],
     asociacion: "Asegurar circulación de pases con triangulaciones rápidas al tercer hombre.",
     presion: "Cerrar con fiereza trayectorias internas del esférico coordinando repliegues.",
-    heatmapCoords: { cx: 50, cy: 50, r: 20, grad: "glowCentros" },
-    coords: { x: 50, y: 50 }
+    heatmapCoords: { cx: 50, cy: 56, r: 22, grad: "glowCentros" },
+    coords: { x: 50, y: 56 },
+    pivoteCoords: { x: 50, y: 82 },
+    centralCoords: { x: 32, y: 104 },
+    rivalCoords: { x: 50, y: 30 }
   };
 
   return (
@@ -810,340 +860,39 @@ export default function AICoachSection({ profile, logs }: AICoachSectionProps) {
               </div>
             </div>
           ) : (
-            // ---------------- NEW FEATURE: PIZARRÓN TÁCTICO & SOCCER IQ TEST ----------------
             <div className="space-y-6">
-              {/* Dashboard Layout for Pizarrón */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                {/* Visual Field Interactive Canvas */}
-                <div className="glass p-4 sm:p-5 flex flex-col justify-between items-stretch">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="text-left">
-                      <h3 className="text-sm font-black text-white uppercase tracking-tight flex items-center gap-1.5">
-                        <Compass className="w-4 h-4 text-emerald-400" />
-                        Disposición en Campo
-                      </h3>
-                      <p className="text-[10px] text-neutral-400">
-                        Haz clic en los nodos de la pizarra táctica para repasar pautas del DT.
-                      </p>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => setHeatmapEnabled(!heatmapEnabled)}
-                      className={`px-2 py-1 rounded text-[10px] font-black border transition cursor-pointer ${
-                        heatmapEnabled
-                          ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                          : 'bg-white/5 text-neutral-400 border-white/5'
-                      }`}
-                    >
-                      MAPA DE CALOR {heatmapEnabled ? '✅' : '❌'}
-                    </button>
-                  </div>
-
-                  {/* SVG Football Field Representation */}
-                  <div className="relative bg-emerald-950/20 border border-emerald-500/20 rounded-2xl p-5 overflow-hidden flex justify-center items-center h-[280px]">
-                    {/* Grid-lines overlay */}
-                    <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:12px_12px] opacity-40 pointer-events-none" />
-                    
-                    {/* SVG Field Drawing */}
-                    <svg
-                      viewBox="0 0 100 100"
-                      className="w-full h-full max-w-[210px] opacity-75"
-                    >
-                      <defs>
-                        {/* Heatmap Gradients */}
-                        <radialGradient id="glowArquero" cx="50%" cy="50%" r="50%">
-                          <stop offset="0%" stopColor="#10b981" stopOpacity="0.45" />
-                          <stop offset="40%" stopColor="#10b981" stopOpacity="0.2" />
-                          <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
-                        </radialGradient>
-                        <radialGradient id="glowDefensas" cx="50%" cy="50%" r="50%">
-                          <stop offset="0%" stopColor="#ffff00" stopOpacity="0.35" />
-                          <stop offset="50%" stopColor="#ffff00" stopOpacity="0.15" />
-                          <stop offset="100%" stopColor="#ffff00" stopOpacity="0" />
-                        </radialGradient>
-                        <radialGradient id="glowCentros" cx="50%" cy="50%" r="50%">
-                          <stop offset="0%" stopColor="#0ea5e9" stopOpacity="0.35" />
-                          <stop offset="50%" stopColor="#0ea5e9" stopOpacity="0.15" />
-                          <stop offset="100%" stopColor="#0ea5e9" stopOpacity="0" />
-                        </radialGradient>
-                        <radialGradient id="glowEspecialidades" cx="50%" cy="50%" r="50%">
-                          <stop offset="0%" stopColor="#a855f7" stopOpacity="0.35" />
-                          <stop offset="50%" stopColor="#a855f7" stopOpacity="0.15" />
-                          <stop offset="100%" stopColor="#a855f7" stopOpacity="0" />
-                        </radialGradient>
-                        <radialGradient id="glowDelantero" cx="50%" cy="50%" r="50%">
-                          <stop offset="0%" stopColor="#ec4899" stopOpacity="0.4" />
-                          <stop offset="40%" stopColor="#ec4899" stopOpacity="0.15" />
-                          <stop offset="100%" stopColor="#ec4899" stopOpacity="0" />
-                        </radialGradient>
-                      </defs>
-
-                      {/* Pitch Lines */}
-                      <rect x="5" y="5" width="90" height="90" fill="none" stroke="rgba(16,185,129,0.3)" strokeWidth="1" />
-                      <line x1="5" y1="50" x2="95" y2="50" stroke="rgba(16,185,129,0.3)" strokeWidth="1" />
-                      <circle cx="50" cy="50" r="14" fill="none" stroke="rgba(16,185,129,0.3)" strokeWidth="1" />
-                      
-                      {/* Top Penalty Box */}
-                      <rect x="25" y="5" width="50" height="18" fill="none" stroke="rgba(16,185,129,0.3)" strokeWidth="1" />
-                      <rect x="38" y="5" width="24" height="6" fill="none" stroke="rgba(16,185,129,0.3)" strokeWidth="1" />
-                      
-                      {/* Bottom Penalty Box */}
-                      <rect x="25" y="77" width="50" height="18" fill="none" stroke="rgba(16,185,129,0.3)" strokeWidth="1" />
-                      <rect x="38" y="89" width="24" height="6" fill="none" stroke="rgba(16,185,129,0.3)" strokeWidth="1" />
-
-                      {/* Heatmap overlay based on active profile position */}
-                      {heatmapEnabled && (
-                        <circle
-                          cx={currentPosDetails.coords.x}
-                          cy={currentPosDetails.coords.y}
-                          r={currentPosDetails.heatmapCoords.r}
-                          fill={`url(#${currentPosDetails.heatmapCoords.grad})`}
-                        />
-                      )}
-
-                      {/* Interactive Player Node: ME (You) */}
-                      <g
-                        className="cursor-pointer group"
-                        onClick={() => setSelectedBlackboardNode('me')}
-                      >
-                        <circle
-                          cx={currentPosDetails.coords.x}
-                          cy={currentPosDetails.coords.y}
-                          r="5.5"
-                          fill={selectedBlackboardNode === 'me' ? '#10b981' : '#047857'}
-                          className="transition hover:r-[6.5]"
-                        />
-                        <circle
-                          cx={currentPosDetails.coords.x}
-                          cy={currentPosDetails.coords.y}
-                          r="7.5"
-                          fill="none"
-                          stroke="#10b981"
-                          strokeWidth="1"
-                          className="animate-ping opacity-60"
-                        />
-                        <text
-                          x={currentPosDetails.coords.x}
-                          y={currentPosDetails.coords.y + 11}
-                          textAnchor="middle"
-                          fill="#ffffff"
-                          fontSize="4"
-                          fontWeight="black"
-                          className="font-sans uppercase scale-[1.1]"
-                        >
-                          TÚ
-                        </text>
-                      </g>
-
-                      {/* Interactive Player Node: Midfielder support */}
-                      <g
-                        className="cursor-pointer group"
-                        onClick={() => setSelectedBlackboardNode('midfielder')}
-                      >
-                        <circle
-                          cx="50"
-                          cy="50"
-                          r="5"
-                          fill={selectedBlackboardNode === 'midfielder' ? '#ffffff' : '#a3a3a3'}
-                          className="transition"
-                        />
-                        <text
-                          x="50"
-                          y="58"
-                          textAnchor="middle"
-                          fill="#a3a3a3"
-                          fontSize="3.5"
-                          className="font-mono bg-black"
-                        >
-                          Pivote
-                        </text>
-                      </g>
-
-                      {/* Interactive Player Node: Defense Support */}
-                      <g
-                        className="cursor-pointer group"
-                        onClick={() => setSelectedBlackboardNode('defense')}
-                      >
-                        <circle
-                          cx="50"
-                          cy="75"
-                          r="5"
-                          fill={selectedBlackboardNode === 'defense' ? '#ffffff' : '#a3a3a3'}
-                          className="transition"
-                        />
-                        <text
-                          x="50"
-                          y="82"
-                          textAnchor="middle"
-                          fill="#a3a3a3"
-                          fontSize="3.5"
-                          className="font-mono"
-                        >
-                          Central
-                        </text>
-                      </g>
-
-                      {/* Interactive Player Node: Rival */}
-                      <g
-                        className="cursor-pointer group"
-                        onClick={() => setSelectedBlackboardNode('rival_gk')}
-                      >
-                        <circle
-                          cx="50"
-                          cy="15"
-                          r="5"
-                          fill={selectedBlackboardNode === 'rival_gk' ? '#f43f5e' : '#be123c'}
-                          className="transition"
-                        />
-                        <text
-                          x="50"
-                          y="22"
-                          textAnchor="middle"
-                          fill="#f43f5e"
-                          fontSize="3.5"
-                          className="font-mono"
-                        >
-                          Zaga Rival
-                        </text>
-                      </g>
-                    </svg>
-
-                    {/* Left corner mini absolute pitch details */}
-                    <span className="absolute bottom-3 left-4 text-[9px] font-mono text-neutral-500 uppercase">
-                      Demarcación de {profile.posicion}
+              {/* Strategic Guidelines Card (simplified as requested by user) */}
+              <div className="glass p-5 sm:p-6 text-left border-emerald-500/15 space-y-4">
+                <div className="space-y-4">
+                  <div>
+                    <span className="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded font-black uppercase tracking-wider font-mono">
+                      Tu Posición: {profile.posicion}
                     </span>
+                    <h4 className="text-base font-extrabold text-white uppercase tracking-tight mt-2.5">
+                      {currentPosDetails.rol}
+                    </h4>
                   </div>
-                </div>
 
-                {/* Sub-pane Details of clicked chalkboard node */}
-                <div className="glass p-4 sm:p-5 text-left flex flex-col justify-between">
-                  <AnimatePresence mode="wait">
-                    {selectedBlackboardNode === 'me' ? (
-                      <motion.div
-                        key="node-me"
-                        initial={{ opacity: 0, x: 10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -10 }}
-                        className="space-y-4"
-                      >
-                        <span className="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded font-black uppercase tracking-wider font-mono">
-                          Tu Posición: {profile.posicion}
-                        </span>
-                        
-                        <h4 className="text-sm font-black text-white uppercase tracking-tight">
-                          {currentPosDetails.rol}
-                        </h4>
-
-                        <div className="space-y-2.5">
-                          <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-wider block">
-                            Directrices de Oro del Míster:
-                          </span>
-                          <div className="space-y-1.5 PL-1">
-                            {currentPosDetails.pautas.map((p, pIdx) => (
-                              <p key={pIdx} className="text-xs font-light text-neutral-300 leading-normal flex items-start gap-1.5">
-                                <span className="text-emerald-400 font-mono font-bold mt-0.5">{pIdx + 1}.</span>
-                                <span>{p}</span>
-                              </p>
-                            ))}
-                          </div>
+                  <div className="space-y-2.5">
+                    <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-wider block font-medium font-mono">
+                      Directrices de Oro del Míster:
+                    </span>
+                    <div className="space-y-2 pl-1">
+                      {currentPosDetails.pautas.map((p, pIdx) => (
+                        <div key={pIdx} className="text-xs sm:text-sm font-light text-neutral-300 leading-relaxed flex items-start gap-2.5">
+                          <span className="text-emerald-400 font-mono font-bold mt-0.5">{pIdx + 1}.</span>
+                          <span>{p}</span>
                         </div>
-
-                        <p className="text-xs font-light text-neutral-400 italic">
-                          * Tus habilidades de <strong className="text-white">{profile.habilidad1}</strong> y <strong className="text-white">{profile.habilidad2}</strong> potencian de forma directa estas directrices.
-                        </p>
-                      </motion.div>
-                    ) : selectedBlackboardNode === 'midfielder' ? (
-                      <motion.div
-                        key="node-mid"
-                        initial={{ opacity: 0, x: 10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -10 }}
-                        className="space-y-4"
-                      >
-                        <span className="text-[10px] bg-sky-500/10 text-sky-400 border border-sky-500/20 px-2 py-0.5 rounded font-black uppercase tracking-wider font-mono">
-                          Compañero: Pivote / Volante Central
-                        </span>
-                        
-                        <h4 className="text-sm font-black text-white uppercase tracking-tight">
-                          Eje de Transición Ofensiva
-                        </h4>
-
-                        <div className="space-y-2.5 text-xs text-neutral-300 pl-1 leading-relaxed">
-                          <p>
-                            <strong>Asociación Colectiva:</strong> {currentPosDetails.asociacion}
-                          </p>
-                          <p className="font-light">
-                            <strong>Indicación de Salida:</strong> Busca desmarcarse y perfilarse libre de marcas por detrás de la primera línea enemiga para ofrecerte apoyo limpio de pase hacia atrás.
-                          </p>
-                        </div>
-
-                        <p className="text-[11px] font-light text-neutral-400 bg-white/[0.02] p-2.5 rounded-xl border border-white/5">
-                          "Un buen equipo no juega en una sola dirección. Usa el pivote para oxigenar, dar la vuelta y desordenar al rival."
-                        </p>
-                      </motion.div>
-                    ) : selectedBlackboardNode === 'defense' ? (
-                      <motion.div
-                        key="node-def"
-                        initial={{ opacity: 0, x: 10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -10 }}
-                        className="space-y-4"
-                      >
-                        <span className="text-[10px] bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2 py-0.5 rounded font-black uppercase tracking-wider font-mono">
-                          Compañero: Zaguero Central
-                        </span>
-                        
-                        <h4 className="text-sm font-black text-white uppercase tracking-tight">
-                          Cierre & Salida Limpia
-                        </h4>
-
-                        <div className="space-y-2.5 text-xs text-neutral-300 pl-1 leading-relaxed">
-                          <p>
-                            <strong>Sincronización táctica:</strong> Mantente a una distancia segura donde puedas anticipar una pérdida o replegarte velozmente haciendo cobertura física.
-                          </p>
-                          <p className="font-light">
-                            <strong>Orientación:</strong> Comandarán el bloque bajo. Cuando el central gane el balón, debes perfilarte de espaldas a la banda para estirar el espacio y darle visión clara.
-                          </p>
-                        </div>
-                      </motion.div>
-                    ) : (
-                      <motion.div
-                        key="node-rival"
-                        initial={{ opacity: 0, x: 10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -10 }}
-                        className="space-y-4"
-                      >
-                        <span className="text-[10px] bg-rose-500/10 text-rose-450 border border-rose-500/20 px-2 py-0.5 rounded font-black uppercase tracking-wider font-mono">
-                          Marca: Línea Defensiva Rival
-                        </span>
-                        
-                        <h4 className="text-sm font-black text-white uppercase tracking-tight font-sans">
-                          Presión e Intercepción
-                        </h4>
-
-                        <div className="space-y-2.5 text-xs text-neutral-300 pl-1 leading-relaxed">
-                          <p>
-                            <strong>Cómo presionar:</strong> {currentPosDetails.presion}
-                          </p>
-                          <p className="font-light">
-                            <strong>Debilitamiento:</strong> Intimídalos saliendo a presionar en diagonal. Bloquea sus ángulos cómodos de pase interior y fuérzalos a dividir la pelota con pelotazos largos.
-                          </p>
-                        </div>
-
-                        <p className="text-[11px] font-mono text-rose-400 italic bg-rose-500/5 p-2 rounded border border-rose-500/10">
-                          "La defensa rival se resquebraja cuando los volvemos lentos. Muerde su primer toque chaval."
-                        </p>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
-                  <div className="text-[10px] text-neutral-500 mt-4 border-t border-white/[0.04] pt-2 italic">
-                    * Pulsa sobre el Central, Pivote o Marca Rival en el diagrama para cambiar de análisis táctico.
+                      ))}
+                    </div>
                   </div>
+
+                  <p className="text-xs font-light text-neutral-400 italic pt-2 border-t border-white/[0.04]">
+                    * Tus habilidades de <strong className="text-white">{profile.habilidad1}</strong> y <strong className="text-white">{profile.habilidad2}</strong> potencian de forma directa estas directrices.
+                  </p>
                 </div>
               </div>
+
 
               {/* ---------------- FUTBOL IQ TEST PANEL ---------------- */}
               <div className="glass p-5 text-left border-emerald-500/15 space-y-4">

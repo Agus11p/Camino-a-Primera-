@@ -228,17 +228,18 @@ Debes devolver obligatoriamente un objeto JSON que coincida con el siguiente esq
 {
   "pregunta": "Descripción breve e intensa (de 2-3 líneas) de la jugada del partido en la que se encuentra el jugador, terminando con una pregunta directa de qué debe hacer.",
   "opciones": [
-    "Opción A: Acción detallada",
-    "Opción B: Acción detallada",
-    "Opción C: Acción detallada"
+    "Opción A: Acción detallada (LA DEBE SER SIEMPRE LA CORRECTA)",
+    "Opción B: Acción detallada (regular/conservadora)",
+    "Opción C: Acción detallada (incorrecta/novato)"
   ],
   "explicaciones": [
-    "Breve explicación (máximo 20 palabras) en tono de El Míster para la opción A.",
-    "Breve explicación (máximo 20 palabras) en tono de El Míster para la opción B.",
-    "Breve explicación (máximo 20 palabras) en tono de El Míster para la opción C."
+    "Breve explicación (máximo 20 palabras) en tono de El Míster para la opción A (elogiar de que es excelente).",
+    "Breve explicación (máximo 20 palabras) en tono de El Míster para la opción B (indicar que es conservadora).",
+    "Breve explicación (máximo 20 palabras) en tono de El Míster para la opción C (indicar que es errónea)."
   ],
-  "correcto": 0, 1 o 2 (el índice de la opción tácticamente correcta)
+  "correcto": 0
 }
+La opción A (índice 0) debe ser obligatoriamente la mejor respuesta tácticamente en cada escenario creado.
 La redacción debe estar en español castellano y contener jerga de vestuario realista: "chaval", "zagueros", "pivote", "perfilado", "bascular", "repliegue", "desmarque", "segundo palo" etc.
 `;
 
@@ -267,6 +268,25 @@ La redacción debe estar en español castellano y contener jerga de vestuario re
     });
 
     const parsedQuiz = JSON.parse(response.text.trim());
+    
+    // Ensure that correct answer is ALWAYS Option A (index 0)
+    // If the model returned a correct index other than 0, let's swap 0 and correctIdx
+    const correctIdx = typeof parsedQuiz.correcto === 'number' ? parsedQuiz.correcto : 0;
+    if (correctIdx !== 0 && parsedQuiz.opciones && parsedQuiz.opciones.length > correctIdx) {
+      // Swap opciones
+      const tempOp = parsedQuiz.opciones[0];
+      parsedQuiz.opciones[0] = parsedQuiz.opciones[correctIdx];
+      parsedQuiz.opciones[correctIdx] = tempOp;
+
+      // Swap explicaciones
+      if (parsedQuiz.explicaciones && parsedQuiz.explicaciones.length > correctIdx) {
+        const tempExp = parsedQuiz.explicaciones[0];
+        parsedQuiz.explicaciones[0] = parsedQuiz.explicaciones[correctIdx];
+        parsedQuiz.explicaciones[correctIdx] = tempExp;
+      }
+    }
+    parsedQuiz.correcto = 0;
+
     return res.json({
       success: true,
       mode: 'online',
@@ -281,16 +301,16 @@ La redacción debe estar en español castellano y contener jerga de vestuario re
       quiz: {
         pregunta: `Como ${profile?.posicion || 'Jugador de Campo'}, vas conduciendo en velocidad y te sale al cruce el último defensor central perfilado hacia tu pierna hábil (${profile?.piernaHabil || 'Diestro'}). ¿Cuál es tu decisión inmediata chaval?`,
         opciones: [
-          "Frenar en seco, enganchar hacia afuera buscando tu perfil para centrar o rematar con rosca.",
           "Amagar el tiro a portería y acelerar en diagonal hacia la pierna débil del central para rebasarlo físicamente.",
+          "Frenar en seco, enganchar hacia afuera buscando tu perfil para centrar o rematar con rosca.",
           "Tocar el balón de espaldas hacia el mediocampista de apoyo que viene de frente libre de marca."
         ],
         explicaciones: [
-          "Frenar y enganchar hacia tu perfil fuerte aprovecha tu destreza fuerte, pero dale más velocidad chaval, que el lateral rival te va a comer la espalda.",
           "¡Soberbio! Es la jugada que busco en mis extremos: amagar el chut, reventarle la cadera al central y definir cruzado con clase.",
+          "Frenar y enganchar hacia tu perfil fuerte aprovecha tu destreza fuerte, pero dale más velocidad chaval, que el lateral rival te va a comer la espalda.",
           "Es una opción prudente para salvaguardar la posesión, pero en los últimos tres cuartos de campo quiero rebeldía y uno contra uno."
         ],
-        correcto: 1
+        correcto: 0
       }
     });
   }
