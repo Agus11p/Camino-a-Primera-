@@ -67,6 +67,8 @@ export interface ActivityLog {
   vallaInvicta?: boolean; // Goalkeeper: clean sheet
   reflexion: string;
   timestamp: number;
+  smartwatchBpm?: number; // Xiaomi/Smartwatch: average heart rate BPM
+  smartwatchKm?: number;  // Xiaomi/Smartwatch: distance covered in Kilometers
 }
 
 export interface DynamicGoal {

@@ -19,6 +19,7 @@ import {
   Target,
   Compass,
   CheckCircle2,
+  Check,
   XCircle,
   HelpCircle,
   Info
@@ -336,7 +337,7 @@ function parseBoldText(text: string) {
 }
 
 export default function AICoachSection({ profile, logs }: AICoachSectionProps) {
-  const [activeSubTab, setActiveSubTab] = useState<'profile-analyser' | 'direct-chat' | 'tactical-chalkboard'>('profile-analyser');
+  const [activeSubTab, setActiveSubTab] = useState<'profile-analyser' | 'direct-chat' | 'improvements-list'>('direct-chat');
 
   // Interactive Pitch Blackboard state
   const [selectedBlackboardNode, setSelectedBlackboardNode] = useState<'me' | 'midfielder' | 'defense' | 'rival_gk'>('me');
@@ -375,7 +376,7 @@ export default function AICoachSection({ profile, logs }: AICoachSectionProps) {
       {
         id: 'msg-welcome',
         role: 'assistant',
-        content: `¡Hola, ${profile?.nombre || 'atleta'}! Llegaste al vestuario de El Míster. ⚽ Aquí no hay espacio para la vagancia ni titubeos. Pregúntame lo que quieras sobre posicionamiento táctico en banda, trabajos físicos explosivos, cómo ganarte el respeto del vestuario o lidiar con el pánico escénico antes de jugar un derbi de primera división. ¿A por todas hoy?`,
+        content: `¡Hola, ${profile?.nombre || 'deportista'}! Le damos la bienvenida al módulo de Asesoría Técnica de Alto Rendimiento. ⚽ Aquí podrá consultar pautas sobre posicionamiento táctico en banda, preparación física explosiva, liderazgo de vestuario o gestión de la concentración antes de partidos cruciales. ¿En qué aspecto de su rendimiento desea profundizar hoy?`,
         timestamp: Date.now()
       }
     ];
@@ -498,16 +499,16 @@ export default function AICoachSection({ profile, logs }: AICoachSectionProps) {
       console.warn('Network issue or offline server, using offline quiz mock', err);
       // Hardcoded high-quality quiz mock as robust fallback
       setCurrentQuiz({
-        pregunta: `Míster: "Chaval, vamos empatando 1-1 en el minuto 82. Recibes el balón como ${profile?.posicion || 'Jugador de Campo'} en tres cuartos de cancha, tu marcador viene encimado buscando el contacto físico y tienes a tu extremo desmarcado picando en diagonal por la banda contraria. ¿Qué decides?"`,
+        pregunta: `Situación analítica: "Empate 1-1 en el minuto 82. Recibe el balón como ${profile?.posicion || 'Jugador de Campo'} en tres cuartos de campo rival. El defensor inmediato presiona activamente buscando el contacto físico y visualiza a su extremo desmarcado picando al espacio por la banda contraria. ¿Qué decisión táctica toma?"`,
         opciones: [
-          "Aguantar la embestida física de espaldas, girar para perfilar tu pierna fuerte, y filtrar un pase bombeado con rosca hacia el extremo que pica libre.",
-          "Apoyarte de primera intención con el pivote defensivo que viene de cara, descargando el esférico y pidiendo la devolución inmediata en pared lineal.",
-          "Hacer amago de pase, dar una media vuelta explosiva para sacudirte la marca por potencia, e intentar un disparo de empeine desde fuera del área."
+          "Aguantar la presión física de espaldas, girar para perfilar la pierna fuerte, y filtrar un pase bombeado con precisión hacia el extremo que corre libre.",
+          "Apoyarse de primera intención con el pivote defensivo que viene de cara, asegurando la posesión del balón mediante una devolución rápida.",
+          "Realizar un amago de pase parcial y ejecutar un tiro de larga distancia al arco a pesar de la densidad defensiva rival."
         ],
         explicaciones: [
-          "¡Soberbio! Eso es visión periférica de primera división chaval. Poner a correr al compañero a la espalda del lateral mata cualquier repliegue tardío.",
-          "Es correcto para proteger la posesión del balón, pero a estas alturas del encuentro, hay que arriesgar en zona de tres cuartos para dañar.",
-          "Demasiado individualista. La zaga rival está compactada e intentar un tiro incómodo es regalarles el contraataque final."
+          "Excelente decisión táctica. Aprovechar el espacio libre del extremo desborda la estructura defensiva y supera el repliegue rival.",
+          "Es una opción válida de apoyo, pero a estas alturas del encuentro se requiere mayor agresividad táctica ofensiva para buscar el gol.",
+          "Un recurso de alto riesgo e individualista bajo una zaga compactada, que otorga una recuperación sencilla para el contraataque rival."
         ],
         correcto: 0
       });
@@ -574,12 +575,48 @@ export default function AICoachSection({ profile, logs }: AICoachSectionProps) {
       }
     } catch (err) {
       console.warn('Network chat error, replying in offline mode', err);
-      // Offline DT speech fallback
+      // Offline formal speech fallback with intelligent keyword parsing
       setTimeout(() => {
+        const queryNormalized = (msgText || '').toLowerCase().trim();
+        let fallbackReply = '';
+        if (queryNormalized.includes('reflejo') || queryNormalized.includes('reaccion') || queryNormalized.includes('reacción')) {
+          fallbackReply = `Hola, ${profile?.nombre || 'Deportista'}. Para mejorar sus reflejos y tiempo de reacción, le sugiero las siguientes prácticas estructuradas:
+
+1. **Entrenamiento con pelota de reacción:** Utilice una pelota de rebote irregular para agilizar la agudeza visual y la captura física de reflejos rápidos.
+2. **Pared de rebote rápido:** Realice pases continuos e intensos a un toque contra un muro plano a corta distancia para forzar la toma de decisión veloz con el balón.
+3. **Estímulos de colores interactivos:** Entrene tocando conos de colores específicos o reaccionando a señales auditivas espontáneas de su compañero.
+4. **Coordinación óculo-manual de soporte:** Trabaje con pelotas de tenis rebotando en ángulos oblicuos e imprevisibles.
+5. **Luces reactivas cognitivas:** Utilice sistemas de pulsadores de luz aleatoria para mejorar la respuesta neural instantánea.
+
+Para un desarrollo óptimo, le recomiendo comenzar alternando constantemente entre los métodos **1 y 5** semanalmente.`;
+        } else if (queryNormalized.includes('comida') || queryNormalized.includes('dieta') || queryNormalized.includes('nutricion') || queryNormalized.includes('comer') || queryNormalized.includes('alimentacion') || queryNormalized.includes('regimen') || queryNormalized.includes('nutrición') || queryNormalized.includes('alimentación')) {
+          fallbackReply = `Hola, ${profile?.nombre || 'Deportista'}. Una nutrición deportiva estructurada y formal es fundamental para maximizar su potencia y recuperación en la posición de **${profile?.posicion || 'Jugador'}**:
+
+1. **Carbohidratos complejos pre-partido:** Consuma arroz integral, avena o pasta integral 3 horas antes del juego para mantener estables los niveles de glucógeno.
+2. **Proteínas magras de absorción rápida:** Consuma carnes magras, pescados o proteínas vegetales durante la primera hora post-entrenamiento para reconstruir tejidos.
+3. **Hidratación celular constante:** Beba entre 2 y 3 litros de agua limpia diariamente para prevenir calambres y estiramientos musculares dolorosos.
+4. **Grasas saludables:** Incorpore porciones óptimas de aguacate, aceite de oliva virgen y frutos secos ricos en ácidos grasos antiinflamatorios.
+5. **Supresión de ultraprocesados:** Evite alimentos ricos en azúcares libres, harinas refinadas o fritos pesados que ralentizan la asimilación energética.
+
+Le sugiero dar máxima prioridad a los puntos **1 y 3** para asegurar que mantenga una resistencia insuperable durante la totalidad del encuentro.`;
+        } else if (queryNormalized.includes('reloj') || queryNormalized.includes('xiaomi') || queryNormalized.includes('smartwatch') || queryNormalized.includes('banda') || queryNormalized.includes('pulsomet') || queryNormalized.includes('wearable')) {
+          fallbackReply = `Hola, ${profile?.nombre || 'Deportista'}. Qué excelente iniciativa la de integrar los datos de su reloj inteligente o banda deportiva Xiaomi en su preparación física táctica:
+
+1. **Campos de Registro Habilitados:** Hemos habilitado campos dedicados en el formulario de "Registrar Jornada" para que ingrese su frecuencia cardíaca promedio (BPM) y distancia recorrida (KM) directamente al anotar sus partidos o entrenamientos.
+2. **Evaluación de Resistencia:** Su Coach AI evaluará su rango cardiovascular de esfuerzo (siendo el 85% al 95% el óptimo en sprints anaeróbicos breves) y estimará si el recorrido total en kilómetros es de alto rendimiento para su posición: **${profile?.posicion || 'Jugador'}**.
+3. **Análisis por Rendimiento:** Recuerde registrar el entrenamiento o partido con el rango medido en su Xiaomi para que El Míster lo tenga en cuenta en su próximo plan táctico global.
+4. **Control del Descanso:** El reposo celular (horas de sueño profundo reportadas por su Xiaomi) es vital para evitar el sobreentrenamiento y desgarros musculares.
+
+Sume distancias y pulsaciones hoy mismo ingresando sus promedios en "Registrar Jornada".`;
+        } else {
+          fallbackReply = `Hola, ${profile?.nombre || 'Deportista'}. En este momento el módulo de consejería táctica se encuentra en modo local fuera de línea, pero le brindo la siguiente sugerencia formal en relación a su consulta sobre "${msgText}":
+Como futbolista de la posición **${profile?.posicion || 'Jugador'}**, la disciplina corporal diaria y la madurez táctica de jugar con fluidez y a dos toques de cara optimizan notablemente el juego. Continúe entrenando arduamente y manteniendo pautas formales de rendimiento técnico. ¡Siga progresando!`;
+        }
+
         setChatMessages(prev => [...prev, {
           id: 'msg-' + Math.random().toString(36).substr(2, 9),
           role: 'assistant',
-          content: `Mira, chaval. Estamos analizando pizarrones en el vestuario sin conexión. Pero te diré una cosa sobre tu pregunta de "${msgText}": en un partido caliente, con el césped húmedo y el público apretando, lo único que te salva es la fe ciega en tu pierna hábil (${profile?.piernaHabil || 'bien entrenada'}) y la madurez táctica de jugar a dos toques de cara. ¡A meterle intensidad!`,
+          content: fallbackReply,
           timestamp: Date.now()
         }]);
       }, 1000);
@@ -590,6 +627,7 @@ export default function AICoachSection({ profile, logs }: AICoachSectionProps) {
 
   // Recommended queries for the direct chat
   const chatQueries = [
+    { text: '¿Tengo un reloj Xiaomi, qué podemos hacer con él para mejorar mi rendimiento?', label: 'Reloj Xiaomi ⌚' },
     { text: '¿Cómo aumentar explosividad en sprint corto de 10m?', label: 'Sprints ⚡' },
     { text: '¿Qué comer de carbohidratos 24 horas antes de competir?', label: 'Dieta 🍏' },
     { text: '¿Cómo perfilarme óptimamente para recibir y girar en un toque?', label: 'Perfilado ⚽' },
@@ -631,27 +669,40 @@ export default function AICoachSection({ profile, logs }: AICoachSectionProps) {
             
             <div className="text-left">
               <h2 className="text-base font-black text-white uppercase tracking-tight flex items-center gap-1.5 leading-none">
-                El Míster <span className="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider font-mono">AI Coach</span>
+                Coach Técnico <span className="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider font-mono">AI Coach</span>
               </h2>
               <p className="text-xs text-neutral-400 font-light mt-1.5 leading-tight">
-                Instrucciones técnicas de máxima exigencia para dar el salto al profesionalismo.
+                Planes y asesorías técnicas estructuradas para el máximo rendimiento deportivo.
               </p>
             </div>
-          </div>
-
-          {/* Quick Stat Pill */}
-          <div className="flex items-center gap-2 text-xs bg-white/5 border border-white/5 px-3 py-1.5 rounded-full self-stretch sm:self-auto justify-center">
-            <Trophy className="w-3.5 h-3.5 text-yellow-500" />
-            <span className="text-neutral-300 font-semibold font-mono">IQ de Cancha:</span>
-            <span className="text-emerald-400 font-black font-mono">
-              {quizScore.attempts > 0 ? `${Math.round((quizScore.correct / quizScore.attempts) * 100)}%` : '--'}
-            </span>
           </div>
         </div>
       </div>
 
       {/* 2. Selection Tabs */}
       <div className="bg-neutral-900 p-1 rounded-2xl border border-white/[0.04] grid grid-cols-3 gap-1.5 max-w-lg mx-auto">
+        <button
+          onClick={() => setActiveSubTab('direct-chat')}
+          className={`py-2 px-1 text-[10px] sm:text-xs font-black uppercase tracking-wider rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer ${
+            activeSubTab === 'direct-chat'
+              ? 'bg-neutral-850 text-emerald-400 font-extrabold shadow-sm'
+              : 'text-neutral-500 hover:text-neutral-300'
+          }`}
+        >
+          <MessageSquare className="w-3.5 h-3.5 shrink-0" />
+          Consulta DT
+        </button>
+        <button
+          onClick={() => setActiveSubTab('improvements-list')}
+          className={`py-2 px-1 text-[10px] sm:text-xs font-black uppercase tracking-wider rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer ${
+            activeSubTab === 'improvements-list'
+              ? 'bg-neutral-850 text-emerald-400 font-extrabold shadow-sm'
+              : 'text-neutral-500 hover:text-neutral-300'
+          }`}
+        >
+          <Zap className="w-3.5 h-3.5 shrink-0 text-yellow-500" />
+          Roadmap (Próximamente)
+        </button>
         <button
           onClick={() => setActiveSubTab('profile-analyser')}
           className={`py-2 px-1 text-[10px] sm:text-xs font-black uppercase tracking-wider rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer ${
@@ -662,28 +713,6 @@ export default function AICoachSection({ profile, logs }: AICoachSectionProps) {
         >
           <Clipboard className="w-3.5 h-3.5 shrink-0" />
           Análisis Táctico
-        </button>
-        <button
-          onClick={() => setActiveSubTab('direct-chat')}
-          className={`py-2 px-1 text-[10px] sm:text-xs font-black uppercase tracking-wider rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer ${
-            activeSubTab === 'direct-chat'
-              ? 'bg-neutral-850 text-emerald-400 font-extrabold shadow-sm'
-              : 'text-neutral-500 hover:text-neutral-300'
-          }`}
-        >
-          <MessageSquare className="w-3.5 h-3.5 shrink-0" />
-          Charla Técnica
-        </button>
-        <button
-          onClick={() => setActiveSubTab('tactical-chalkboard')}
-          className={`py-2 px-1 text-[10px] sm:text-xs font-black uppercase tracking-wider rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer ${
-            activeSubTab === 'tactical-chalkboard'
-              ? 'bg-neutral-850 text-emerald-400 font-extrabold shadow-sm'
-              : 'text-neutral-500 hover:text-neutral-300'
-          }`}
-        >
-          <Target className="w-3.5 h-3.5 shrink-0 animate-pulse" />
-          Pizarrón Táctico
         </button>
       </div>
 
@@ -708,10 +737,10 @@ export default function AICoachSection({ profile, logs }: AICoachSectionProps) {
                   
                   <div className="space-y-2 max-w-sm mx-auto">
                     <h3 className="text-sm font-black text-white uppercase tracking-tight">
-                      Obtén tu Devolución Profesional
+                      Obtener Devolución de Rendimiento
                     </h3>
                     <p className="text-xs text-neutral-400 leading-relaxed font-light">
-                      El Míster analizará tu ficha técnica, peso, club, posición de **{profile.posicion}**, y rendimiento de tus entrenamientos registrados para brindarte ejercicios y tips específicos de primera división.
+                      Se analizará su ficha de deportista, peso, club, demarcación de **{profile.posicion}**, y el registro de entrenamientos para brindarle pautas específicas basadas en metodología táctica científica.
                     </p>
                   </div>
 
@@ -720,7 +749,7 @@ export default function AICoachSection({ profile, logs }: AICoachSectionProps) {
                     className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 active:scale-[0.98] transition rounded-2xl text-xs font-black uppercase tracking-widest text-neutral-950 flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/15 cursor-pointer"
                   >
                     <Sparkles className="w-4 h-4 text-neutral-950" />
-                    Solicitar Análisis del Míster
+                    Solicitar Análisis Técnico Formativo
                   </button>
                 </div>
               ) : loadingAnalysis ? (
@@ -786,7 +815,7 @@ export default function AICoachSection({ profile, logs }: AICoachSectionProps) {
                         
                         {!isUser && (
                           <span className="block text-[9px] uppercase font-black text-emerald-400/80 tracking-widest mb-1.5 font-mono">
-                            Míster
+                            Coach Técnico
                           </span>
                         )}
 
@@ -836,7 +865,7 @@ export default function AICoachSection({ profile, logs }: AICoachSectionProps) {
                     type="text"
                     value={inputVal}
                     onChange={(e) => setInputVal(e.target.value)}
-                    placeholder="Escribe tu duda de posicionamiento o táctica chaval..."
+                    placeholder="Consulte una duda táctica o de preparación física..."
                     disabled={sendingMessage}
                     className="flex-1 bg-black border border-white/[0.07] focus:border-emerald-500 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none placeholder-neutral-500"
                   />
@@ -875,7 +904,7 @@ export default function AICoachSection({ profile, logs }: AICoachSectionProps) {
 
                   <div className="space-y-2.5">
                     <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-wider block font-medium font-mono">
-                      Directrices de Oro del Míster:
+                      Directrices Doradas de Rendimiento:
                     </span>
                     <div className="space-y-2 pl-1">
                       {currentPosDetails.pautas.map((p, pIdx) => (
@@ -894,137 +923,32 @@ export default function AICoachSection({ profile, logs }: AICoachSectionProps) {
               </div>
 
 
-              {/* ---------------- FUTBOL IQ TEST PANEL ---------------- */}
-              <div className="glass p-5 text-left border-emerald-500/15 space-y-4">
-                <div className="flex items-center justify-between border-b border-white/[0.05] pb-3">
-                  <div className="flex items-center gap-2.5">
-                    <div className="p-2 bg-yellow-500/10 border border-yellow-500/20 rounded-lg text-yellow-500">
-                      <Brain className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-black text-white uppercase tracking-tight">
-                        Examen de IQ de Cancha de El Míster
-                      </h3>
-                      <p className="text-[10px] text-neutral-400">
-                        Demuestra tu madurez para tomar decisiones profesionales al límite.
-                      </p>
+              {/* ---------------- PRÓXIMAMENTE: 20 MEJORAS PLANIFICADAS ---------------- */}
+              <div className="glass p-5 text-left border-amber-500/10 space-y-5">
+                {/* Header card with glass effect */}
+                <div className="p-4 rounded-xl bg-gradient-to-r from-amber-500/10 via-emerald-500/[0.03] to-transparent border border-amber-500/20 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-amber-500 text-neutral-950">
+                      Próximamente
+                    </span>
+                    <span className="text-[10px] font-mono text-neutral-450 font-bold">
+                      Versión 2.0.0 · Roadmap Deportivo
+                    </span>
+                  </div>
+                  <h3 className="text-sm font-black text-white uppercase tracking-tight">
+                    Catálogo de 20 Mejoras de Alto Rendimiento
+                  </h3>
+                  <p className="text-[11px] text-neutral-450 leading-relaxed font-sans">
+                    Para evitar tener que recordar parámetros complejos durante la semana, estamos preparando la automatización definitiva. Vote por sus preferidas para priorizar su lanzamiento prioritario en las siguientes semanas.
+                  </p>
+                  
+                  <div className="flex items-center gap-3 pt-1 text-[10px] font-mono text-neutral-400">
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
+                      <span>Modo de Foco Activo</span>
                     </div>
                   </div>
-
-                  <span className="text-xs font-mono font-bold text-neutral-400 bg-neutral-900 border border-white/5 py-1 px-2.5 rounded-lg">
-                    Rendimiento: {quizScore.correct} / {quizScore.attempts}
-                  </span>
                 </div>
-
-                {!currentQuiz && !quizLoading ? (
-                  // Intial state
-                  <div className="py-8 text-center space-y-4 max-w-sm mx-auto">
-                    <p className="text-xs text-neutral-300 leading-relaxed font-light">
-                      El Míster preparará una situación táctica realista e intensa de partido basada en tu posición certificada de <strong>{profile.posicion}</strong>. ¿Qué decisión tomarías bajo presión extrema?
-                    </p>
-                    <button
-                      onClick={fetchNewQuiz}
-                      className="w-full py-3 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 transition text-xs font-black uppercase text-neutral-950 tracking-widest rounded-xl shadow-lg shadow-emerald-500/10 cursor-pointer"
-                    >
-                      Generar Situación de Juego
-                    </button>
-                  </div>
-                ) : quizLoading ? (
-                  // Loading Quiz Scenario
-                  <div className="py-12 text-center space-y-4">
-                    <div className="w-10 h-10 border-4 border-yellow-500/10 border-t-yellow-500 rounded-full animate-spin mx-auto" />
-                    <p className="text-xs text-neutral-400 font-mono uppercase animate-pulse">
-                      EL MÍSTER ESTÁ DIBUJANDO EN EL PIZARRÓN...
-                    </p>
-                  </div>
-                ) : (
-                  // Render Quiz Scenario
-                  <motion.div
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="space-y-4"
-                  >
-                    {/* Scenario card */}
-                    <div className="p-4 bg-yellow-500/5 border border-yellow-500/10 rounded-2xl flex gap-3.5">
-                      <HelpCircle className="w-6 h-6 text-yellow-500 shrink-0 mt-0.5" />
-                      <p className="text-xs sm:text-sm text-neutral-250 font-light leading-relaxed">
-                        {currentQuiz?.pregunta}
-                      </p>
-                    </div>
-
-                    {/* Multiple choices */}
-                    <div className="space-y-2.5">
-                      {currentQuiz?.opciones.map((op, idx) => {
-                        const isSelected = selectedAnswer === idx;
-                        const isCorrect = idx === currentQuiz.correcto;
-                        const isEvaluated = selectedAnswer !== null;
-
-                        let styleClasses = "border-white/5 bg-white/[0.02] hover:border-white/10 text-neutral-300";
-                        if (isEvaluated) {
-                          if (isCorrect) {
-                            styleClasses = "border-emerald-500 bg-emerald-500/10 text-emerald-400 font-bold";
-                          } else if (isSelected) {
-                            styleClasses = "border-rose-500 bg-rose-500/10 text-rose-400 font-bold";
-                          } else {
-                            styleClasses = "opacity-45 border-white/5 bg-transparent text-neutral-500";
-                          }
-                        }
-
-                        return (
-                          <button
-                            key={idx}
-                            disabled={isEvaluated}
-                            onClick={() => handleSelectQuizAnswer(idx)}
-                            className={`w-full py-3.5 px-4 rounded-xl border text-left transition duration-250 text-xs sm:text-sm flex justify-between items-center ${styleClasses} ${!isEvaluated ? 'cursor-pointer active:scale-[0.99]' : ''}`}
-                          >
-                            <span className="flex-1 pr-2">{op}</span>
-                            
-                            {isEvaluated && isCorrect && (
-                              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                            )}
-                            {isEvaluated && isSelected && !isCorrect && (
-                              <XCircle className="w-4 h-4 text-rose-500 shrink-0" />
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    {/* Feedback Explanation card */}
-                    {selectedAnswer !== null && currentQuiz && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className={`p-4 rounded-2xl border text-xs sm:text-sm text-left flex gap-3 ${
-                          selectedAnswer === currentQuiz.correcto
-                            ? 'bg-emerald-500/10 border-emerald-500/20 text-neutral-250'
-                            : 'bg-rose-500/10 border-rose-500/20 text-neutral-250'
-                        }`}
-                      >
-                        <span className="text-xl shrink-0">
-                          {selectedAnswer === currentQuiz.correcto ? '⚽' : '📣'}
-                        </span>
-                        <div>
-                          <h4 className="font-extrabold uppercase tracking-wider text-xs mb-1">
-                            {selectedAnswer === currentQuiz.correcto ? '¡Así de Claro, Chaval!' : '¡¿Pero Qué Haces, Hombre?!'}
-                          </h4>
-                          <p className="font-light italic text-xs leading-relaxed text-neutral-300">
-                            "{currentQuiz.explicaciones[selectedAnswer]}"
-                          </p>
-                          
-                          <button
-                            type="button"
-                            onClick={fetchNewQuiz}
-                            className="mt-3 py-1.5 px-3 bg-white/5 hover:bg-white/10 active:scale-95 text-[10px] font-black uppercase text-neutral-300 hover:text-white border border-white/10 transition rounded-lg flex items-center gap-1 cursor-pointer"
-                          >
-                            <RefreshCw className="w-3 h-3 text-emerald-400" />
-                            Analizar Siguiente Jugada
-                          </button>
-                        </div>
-                      </motion.div>
-                    )}
-                  </motion.div>
-                )}
               </div>
             </div>
           )}

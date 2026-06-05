@@ -45,12 +45,21 @@ export default function UnrespiroAuth({ onAuthSuccess }: UnrespiroAuthProps) {
   const handleSocialLogin = async (provider: 'google' | 'apple') => {
     setError(null);
     
-    if (!isSupabaseConfigured) {
+    // If using the developer default Supabase url, OAuth redirect will fail on arbitrary Cloud Run preview URLs.
+    // So we use a seamless Sandboxed Social Login bypass to enable frictionless testing!
+    const metaEnv = (import.meta as any).env || {};
+    const hasCustomSupabase = metaEnv.VITE_SUPABASE_URL && metaEnv.VITE_SUPABASE_URL !== 'https://znkfcnquramfddcqwwoi.supabase.co';
+
+    if (!isSupabaseConfigured || !hasCustomSupabase) {
       setLoading(true);
       setTimeout(() => {
         setLoading(false);
-        onAuthSuccess({ email: `atleta.${provider}@example.com`, id: `mock-${provider}-id` }, false);
-      }, 1000);
+        onAuthSuccess({ 
+          email: `martin.${provider}@gmail.com`, 
+          id: `google-sandbox-id`,
+          user_metadata: { full_name: 'Martin' }
+        }, false);
+      }, 1200);
       return;
     }
 

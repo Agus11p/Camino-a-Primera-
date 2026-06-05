@@ -11,6 +11,7 @@ import ProfileCardView from './components/ProfileCardView';
 import DailyLogModal from './components/DailyLogModal';
 import UnrespiroAuth from './components/UnrespiroAuth';
 import AICoachSection from './components/AICoachSection';
+import SettingsSection from './components/SettingsSection';
 import { supabase, isSupabaseConfigured } from './lib/supabase';
 
 import { 
@@ -21,7 +22,8 @@ import {
   ShieldAlert, 
   LogOut,
   Sparkles,
-  User
+  User,
+  Settings
 } from 'lucide-react';
 
 export default function App() {
@@ -202,9 +204,10 @@ export default function App() {
   });
 
   // 2. Navigation & Modal States
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'goals' | 'history' | 'charts' | 'profile' | 'coach'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'goals' | 'coach' | 'config'>('dashboard');
   const [showSetup, setShowSetup] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+  const [showDiarioModal, setShowDiarioModal] = useState(false);
   const [editLogTarget, setEditLogTarget] = useState<ActivityLog | null>(null);
 
   // Sync to local storage
@@ -410,16 +413,14 @@ export default function App() {
   };
 
   const handleResetApp = () => {
-    if (confirm('¿Estás seguro de que quieres restablecer tu ficha de jugador? Esto borrará tus metas y todos tus partidos registrados de forma irreversible.')) {
-      setProfile(null);
-      setLogs([]);
-      setGoals([]);
-      setGoalsGoal(10);
-      setAssistsGoal(10);
-      setActiveTab('dashboard');
-      setShowSetup(false);
-      localStorage.clear();
-    }
+    setProfile(null);
+    setLogs([]);
+    setGoals([]);
+    setGoalsGoal(10);
+    setAssistsGoal(10);
+    setActiveTab('dashboard');
+    setShowSetup(false);
+    localStorage.clear();
   };
 
   if (isPopup) {
@@ -523,13 +524,18 @@ export default function App() {
                         goalsGoal={goalsGoal}
                         assistsGoal={assistsGoal}
                         onEditProfile={() => setShowSetup(true)}
+                        onResetApp={handleResetApp}
                         onOpenRegisterModal={() => {
                           setEditLogTarget(null);
                           setIsRegisterOpen(true);
                         }}
+                        onOpenDiario={() => setShowDiarioModal(true)}
                         onUpdateGoalsGoal={setGoalsGoal}
                         onUpdateAssistsGoal={setAssistsGoal}
-                        onNavigateToTab={setActiveTab}
+                        onNavigateToTab={(tab) => {
+                          if (tab === 'history') setShowDiarioModal(true);
+                          else if (tab === 'dashboard' || tab === 'goals' || tab === 'coach') setActiveTab(tab);
+                        }}
                       />
                     )}
 
@@ -543,30 +549,18 @@ export default function App() {
                       />
                     )}
 
-                    {activeTab === 'charts' && (
-                      <StatisticsCharts logs={logs} profile={profile} />
-                    )}
-
-                    {activeTab === 'history' && (
-                      <HistoryFeed
-                        logs={logs}
-                        onEdit={handleEditLogTrigger}
-                        onDelete={handleDeleteLog}
-                        profile={profile}
-                      />
-                    )}
-
-                    {activeTab === 'profile' && (
-                      <ProfileCardView
-                        profile={profile!}
-                        onEditProfile={() => setShowSetup(true)}
-                      />
-                    )}
-
                     {activeTab === 'coach' && (
                       <AICoachSection
                         profile={profile!}
                         logs={logs}
+                      />
+                    )}
+
+                    {activeTab === 'config' && (
+                      <SettingsSection
+                        profile={profile!}
+                        onEditProfile={() => setShowSetup(true)}
+                        onResetApp={handleResetApp}
                       />
                     )}
                   </motion.div>
@@ -580,7 +574,7 @@ export default function App() {
       {/* Persistent Bottom Tab Shell Bar */}
       {currentView === 'app' && (
         <nav className="fixed bottom-0 left-0 right-0 bg-neutral-900/90 backdrop-blur-md border-t border-neutral-800 py-2.5 z-40 max-w-2xl mx-auto w-full px-4 rounded-t-xl">
-          <div className="grid grid-cols-6 gap-0.5 sm:gap-1">
+          <div className="grid grid-cols-4 gap-1">
             <button
               onClick={() => setActiveTab('dashboard')}
               className={`flex flex-col items-center justify-center gap-1 transition cursor-pointer ${
@@ -598,7 +592,7 @@ export default function App() {
               }`}
             >
               <Sparkles className="w-5 h-5 shrink-0 text-emerald-400" />
-              <span className="text-[10px] font-bold uppercase tracking-wider font-sans">Míster</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider font-sans">Coach</span>
             </button>
 
             <button
@@ -612,36 +606,52 @@ export default function App() {
             </button>
 
             <button
-              onClick={() => setActiveTab('history')}
+              onClick={() => setActiveTab('config')}
               className={`flex flex-col items-center justify-center gap-1 transition cursor-pointer ${
-                activeTab === 'history' ? 'text-emerald-400 font-extrabold scale-[1.03]' : 'text-neutral-500 hover:text-neutral-400'
+                activeTab === 'config' ? 'text-emerald-400 font-extrabold scale-[1.03]' : 'text-neutral-500 hover:text-neutral-400'
               }`}
             >
-              <Calendar className="w-5 h-5 shrink-0" />
-              <span className="text-[10px] font-bold uppercase tracking-wider font-sans">Diario</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('charts')}
-              className={`flex flex-col items-center justify-center gap-1 transition cursor-pointer ${
-                activeTab === 'charts' ? 'text-emerald-400 font-extrabold scale-[1.03]' : 'text-neutral-500 hover:text-neutral-400'
-              }`}
-            >
-              <BarChart2 className="w-5 h-5 shrink-0" />
-              <span className="text-[10px] font-bold uppercase tracking-wider font-sans">Estads</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('profile')}
-              className={`flex flex-col items-center justify-center gap-1 transition cursor-pointer ${
-                activeTab === 'profile' ? 'text-emerald-400 font-extrabold scale-[1.03]' : 'text-neutral-500 hover:text-neutral-400'
-              }`}
-            >
-              <User className="w-5 h-5 shrink-0" />
-              <span className="text-[10px] font-bold uppercase tracking-wider font-sans">Ficha</span>
+              <Settings className="w-5 h-5 shrink-0" />
+              <span className="text-[10px] font-bold uppercase tracking-wider font-sans">Ajustes</span>
             </button>
           </div>
         </nav>
+      )}
+
+      {/* Historical logs sliding diary modal overlay */}
+      {showDiarioModal && (
+        <div className="fixed inset-0 bg-neutral-950/95 backdrop-blur-md z-50 overflow-y-auto px-4 py-6">
+          <div className="max-w-xl mx-auto space-y-6">
+            <div className="flex items-center justify-between border-b border-white/[0.06] pb-4 sticky top-0 bg-neutral-950/95 pt-2 z-10">
+              <div className="text-left">
+                <h2 className="text-base font-black text-white uppercase tracking-tight flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-emerald-400" />
+                  Diario Personal Escrito
+                </h2>
+                <p className="text-xs text-neutral-450 font-light mt-0.5">
+                  Bitácora de todos sus partidos y entrenamientos registrados.
+                </p>
+              </div>
+              
+              <button
+                onClick={() => setShowDiarioModal(false)}
+                className="p-1 px-3.5 bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white border border-white/10 rounded-xl text-xs font-black uppercase tracking-wider transition cursor-pointer"
+              >
+                Cerrar
+              </button>
+            </div>
+
+            <HistoryFeed
+              logs={logs}
+              onEdit={(log) => {
+                setShowDiarioModal(false);
+                handleEditLogTrigger(log);
+              }}
+              onDelete={handleDeleteLog}
+              profile={profile}
+            />
+          </div>
+        </div>
       )}
 
       {/* Global register modal */}

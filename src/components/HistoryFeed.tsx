@@ -7,7 +7,9 @@ import {
   Calendar, 
   Search, 
   SlidersHorizontal,
-  FolderOpen
+  FolderOpen,
+  Heart,
+  Activity
 } from 'lucide-react';
 
 interface HistoryFeedProps {
@@ -25,6 +27,7 @@ export default function HistoryFeed({
 }: HistoryFeedProps) {
   // Filter state
   const [filter, setFilter] = useState<'Todos' | 'Partidos' | 'Entrenamientos'>('Todos');
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const isArquero = profile?.posicion === 'Arquero';
 
   // Format YYYY-MM-DD cleanly, eg "Sábado, 28 de Mayo"
@@ -190,6 +193,30 @@ export default function HistoryFeed({
                       )
                     )}
 
+                    {/* Smartwatch Metrics HUD inside log item */}
+                    {(log.smartwatchBpm || log.smartwatchKm) && (
+                      <div className="flex flex-wrap items-center gap-2 py-1 flex-row">
+                        <span className="text-[8px] font-mono font-black uppercase text-amber-500 bg-amber-500/10 border border-amber-500/15 px-1.5 py-0.5 rounded flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                          Xiaomi Sync
+                        </span>
+                        
+                        {log.smartwatchBpm && (
+                          <span className="text-[10px] font-mono text-neutral-400 flex items-center gap-1 bg-white/[0.02] border border-white/5 py-0.5 px-2 rounded-md">
+                            <Heart className="w-3 h-3 text-rose-500 fill-rose-500/10" />
+                            <b className="text-white font-extrabold">{log.smartwatchBpm}</b> BPM Prom.
+                          </span>
+                        )}
+
+                        {log.smartwatchKm && (
+                          <span className="text-[10px] font-mono text-neutral-400 flex items-center gap-1 bg-white/[0.02] border border-white/5 py-0.5 px-2 rounded-md">
+                            <Activity className="w-3 h-3 text-cyan-400" />
+                            <b className="text-white font-extrabold">{log.smartwatchKm}</b> KM
+                          </span>
+                        )}
+                      </div>
+                    )}
+
                     {/* Reflection body */}
                     {log.reflexion ? (
                       <p className="text-xs text-neutral-300 font-sans leading-relaxed bg-white/5 border border-white/5 rounded-lg p-3 italic font-light">
@@ -212,17 +239,36 @@ export default function HistoryFeed({
                       <Edit3 className="w-3.5 h-3.5" />
                     </button>
                     
-                    <button
-                      onClick={() => {
-                        if (confirm('¿Estás seguro de que quieres eliminar esta actividad del historial?')) {
-                          onDelete(log.id);
-                        }
-                      }}
-                      className="p-2 text-neutral-400 hover:text-rose-400 hover:bg-white/10 rounded-lg border border-transparent hover:border-white/10 transition cursor-pointer"
-                      title="Eliminar registro"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                    {confirmDeleteId === log.id ? (
+                      <div className="flex flex-col items-center gap-1 bg-rose-950/40 p-1.5 rounded-lg border border-rose-500/30 text-center animate-pulse">
+                        <span className="text-[8px] font-black text-rose-400 uppercase tracking-wider block">¿Borrar?</span>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => {
+                              onDelete(log.id);
+                              setConfirmDeleteId(null);
+                            }}
+                            className="px-1.5 py-0.5 rounded bg-rose-500 text-neutral-950 text-[9px] font-black uppercase tracking-wider hover:bg-rose-400 cursor-pointer"
+                          >
+                            Sí
+                          </button>
+                          <button
+                            onClick={() => setConfirmDeleteId(null)}
+                            className="px-1.5 py-0.5 rounded bg-white/10 text-white text-[9px] font-black uppercase tracking-wider hover:bg-white/20 cursor-pointer"
+                          >
+                            No
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setConfirmDeleteId(log.id)}
+                        className="p-2 text-neutral-400 hover:text-rose-400 hover:bg-white/10 rounded-lg border border-transparent hover:border-white/10 transition cursor-pointer"
+                        title="Eliminar registro"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
