@@ -73,10 +73,7 @@ No te saltes ningún entrenamiento. Sigue sumando de forma constante en tu racha
     const skillsList = profile?.habilidades?.join(', ') || `${profile?.hability1 || 'Velocidad'}, ${profile?.hability2 || 'Pase'}`;
     const recentActivityText = recentLogs && recentLogs.length > 0
       ? recentLogs.map((l: any) => {
-          let extra = '';
-          if (l.smartwatchBpm) extra += `, BPM Promedio medido por smartwatch: ${l.smartwatchBpm}`;
-          if (l.smartwatchKm) extra += `, Distancia medida por smartwatch: ${l.smartwatchKm} km`;
-          return `- Fecha: ${l.fecha}, Tipo: ${l.tipo}, Goles: ${l.goles}, Asistencias: ${l.asistencias}${extra}, Reflexión/Observación: "${l.reflexion || 'Sin reflexión'}"`;
+          return `- Fecha: ${l.fecha}, Tipo: ${l.tipo}, Goles: ${l.goles}, Asistencias: ${l.asistencias}, Reflexión/Observación: "${l.reflexion || 'Sin reflexión'}"`;
         }).join('\n')
       : 'Sin registros de actividad recientes todavía.';
 
@@ -108,7 +105,7 @@ ${recentActivityText}
 Por favor, estructura tu devolución de manera clara y amena usando formato Markdown exactamente con los siguientes encabezados de segundo o tercer nivel:
 
 1. **📋 Análisis Táctico & Rendimiento**: Evalúa su posición táctica (${profile?.posicion}) de acuerdo a sus destrezas autodeclaradas, su edad, y sus estadísticas (goles/asistencias). Di qué está haciendo bien y qué área táctica es urgente refinar para encajar en el fútbol profesional actual de esa demarcación.
-2. **🧬 Condición Física & Consejos Nutricionales**: Analiza su relación estatura-peso y calcula idealmente su IMC. Brinda recomendaciones de hidratación, alimentación específica (hidratos de carbono, grasas saludables, proteínas) y tiempos de descanso óptimos antes y después de competencias duras. Además, si registra datos de smartwatch/reloj (pulsaciones BPM promedio o distancia en km), evalúa si su esfuerzo cardiovascular y recorrido es óptimo para su demarcación táctica.
+2. **🧬 Condición Física & Consejos Nutricionales**: Analiza su relación estatura-peso y calcula idealmente su IMC. Brinda recomendaciones de hidratación, alimentación específica (hidratos de carbono, grasas saludables, proteínas) y tiempos de descanso óptimos antes y después de competencias duras para asegurar su asombroso rendimiento neuromuscular y evitar lesiones.
 3. **⚽ Ejercicios de Campo Recomendados**: Propón 3 tareas o ejercicios sumamente de campo o gimnasio que el jugador pueda hacer solo o con un compañero, detallando: Objetivo, Estructura y Repeticiones. Los ejercicios deben ser 100% lógicos para la demarcación: un central necesita pases largos, cabezazos y anticipo; un extremo necesita desborde, sprint y centros, etc.
 4. **🥋 Mentalidad de Primera**: Escribe un párrafo de alta intensidad mental. Inspíralo a no romper su racha de constancia de ${stats?.streak || 0} días, recuérdale el rigor que requiere llegar a Primera División, y dale un lema imbatible.
 
@@ -174,15 +171,6 @@ Le sugiero dar máxima prioridad a los puntos **1 y 3** para asegurar que manten
 5. **Peso muerto rumano formal:** Crucial para el reclutamiento motor y fortalecimiento de isquiotibiales para aminorar riesgos de desgarro.
 
 Le sugiero concentrarse principalmente en los puntos **1 y 4** para progresar a un ritmo aeróbico explosivo idóneo.`;
-    } else if (lastUserMsg.includes('reloj') || lastUserMsg.includes('xiaomi') || lastUserMsg.includes('smartwatch') || lastUserMsg.includes('banda') || lastUserMsg.includes('pulsomet') || lastUserMsg.includes('wearable')) {
-      reply = `Hola, ${profile?.nombre || 'Deportista'}. Qué excelente iniciativa la de integrar los datos de su reloj inteligente o banda deportiva Xiaomi en su preparación física táctica:
-
-1. **Campos de Registro Habilitados:** Hemos habilitado campos dedicados en el formulario de "Registrar Jornada" para que ingrese su frecuencia cardíaca promedio (BPM) y distancia recorrida (KM) directamente al anotar sus partidos o entrenamientos.
-2. **Evaluación de Resistencia:** Su Coach AI evaluará su rango cardiovascular de esfuerzo (siendo el 85% al 95% el óptimo en sprints anaeróbicos breves) y estimará si el recorrido total en kilómetros es congruente para un **${profile?.posicion || 'Jugador'}**.
-3. **Análisis por Rendimiento:** Recuerde vincular su dispositivo en la aplicación Mi Fitness o Zepp Life de Xiaomi y exportar los datos al finalizar sus sesiones. Ingrese los promedios aquí para ajustar sus pautas de recuperación hídrica e hidratación.
-4. **Control del Descanso:** El reposo celular (horas de sueño profundo reportadas por su Xiaomi) le garantizará un asombroso rendimiento neuromuscular para evitar lesiones.
-
-Pruebe registrar su próxima actividad con sus datos del Xiaomi pulsando en "Registrar Jornada" y El Míster estará listo para guiarlo.`;
     } else {
       reply = `Hola, ${profile?.nombre || 'Deportista'}. En este momento la IA de rendimiento se encuentra analizando directrices en formato de almacenamiento local fuera de línea, pero le brindo la siguiente sugerencia formal en relación a su consulta:
 

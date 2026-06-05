@@ -256,58 +256,6 @@ export default function DailyLogModal({
             )
           )}
 
-          {/* Smartwatch / Xiaomi Integration Section */}
-          <div className="bg-amber-600/[0.03] border border-amber-500/15 rounded-xl p-4 space-y-3 text-left">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-amber-500 uppercase tracking-wider flex items-center gap-1.5 font-mono">
-                <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-                Métricas de Smartwatch (Xiaomi, Garmin, etc.)
-              </span>
-              <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/20 text-amber-500 font-mono font-black uppercase">
-                Opcional
-              </span>
-            </div>
-            <p className="text-[10px] text-neutral-450 leading-relaxed font-sans">
-              Registra los datos reales medidos por tu reloj o banda inteligente para que El Míster personalice tu análisis de esfuerzo y prevención de fatiga.
-            </p>
-            <div className="grid grid-cols-2 gap-3.5">
-              {/* Heart rate average BPM */}
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-mono text-neutral-400 font-bold uppercase tracking-wider flex items-center gap-1">
-                  <Heart className="w-3 h-3 text-rose-500" />
-                  Pulsaciones (BPM Promedio)
-                </label>
-                <input
-                  type="number"
-                  placeholder="ej. 154"
-                  value={smartwatchBpm}
-                  onChange={(e) => setSmartwatchBpm(e.target.value)}
-                  className="w-full bg-neutral-900/80 border border-white/5 focus:border-amber-500 rounded-lg px-3 py-2 text-white focus:outline-none text-xs transition placeholder-neutral-600"
-                  min="40"
-                  max="220"
-                />
-              </div>
-
-              {/* Distance in KM */}
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-mono text-neutral-400 font-bold uppercase tracking-wider flex items-center gap-1">
-                  <Activity className="w-3 h-3 text-cyan-400" />
-                  Distancia Recorrida (KM)
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  placeholder="ej. 6.82"
-                  value={smartwatchKm}
-                  onChange={(e) => setSmartwatchKm(e.target.value)}
-                  className="w-full bg-neutral-900/80 border border-white/5 focus:border-amber-500 rounded-lg px-3 py-2 text-white focus:outline-none text-xs transition placeholder-neutral-600"
-                  min="0"
-                  max="50"
-                />
-              </div>
-            </div>
-          </div>
-
           {/* 4. Reflection field */}
           <div className="space-y-2">
             <span className="block text-xs font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1.5">

@@ -32,7 +32,7 @@ interface DashboardProps {
   onOpenDiario?: () => void;
   onUpdateGoalsGoal: (meta: number) => void;
   onUpdateAssistsGoal: (meta: number) => void;
-  onNavigateToTab: (tab: 'dashboard' | 'goals' | 'coach' | 'history') => void;
+  onNavigateToTab: (tab: 'inicio' | 'dashboard' | 'goals' | 'coach' | 'history') => void;
 }
 
 export default function Dashboard({

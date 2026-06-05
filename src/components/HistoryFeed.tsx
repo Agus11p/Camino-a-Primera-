@@ -193,29 +193,7 @@ export default function HistoryFeed({
                       )
                     )}
 
-                    {/* Smartwatch Metrics HUD inside log item */}
-                    {(log.smartwatchBpm || log.smartwatchKm) && (
-                      <div className="flex flex-wrap items-center gap-2 py-1 flex-row">
-                        <span className="text-[8px] font-mono font-black uppercase text-amber-500 bg-amber-500/10 border border-amber-500/15 px-1.5 py-0.5 rounded flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                          Xiaomi Sync
-                        </span>
-                        
-                        {log.smartwatchBpm && (
-                          <span className="text-[10px] font-mono text-neutral-400 flex items-center gap-1 bg-white/[0.02] border border-white/5 py-0.5 px-2 rounded-md">
-                            <Heart className="w-3 h-3 text-rose-500 fill-rose-500/10" />
-                            <b className="text-white font-extrabold">{log.smartwatchBpm}</b> BPM Prom.
-                          </span>
-                        )}
 
-                        {log.smartwatchKm && (
-                          <span className="text-[10px] font-mono text-neutral-400 flex items-center gap-1 bg-white/[0.02] border border-white/5 py-0.5 px-2 rounded-md">
-                            <Activity className="w-3 h-3 text-cyan-400" />
-                            <b className="text-white font-extrabold">{log.smartwatchKm}</b> KM
-                          </span>
-                        )}
-                      </div>
-                    )}
 
                     {/* Reflection body */}
                     {log.reflexion ? (

@@ -22,12 +22,14 @@ import {
   Check,
   XCircle,
   HelpCircle,
-  Info
+  Info,
+  Heart
 } from 'lucide-react';
 
 interface AICoachSectionProps {
   profile: PlayerProfile;
   logs: ActivityLog[];
+  onOpenRegisterModal?: () => void;
 }
 
 interface ChatMessage {
@@ -336,7 +338,7 @@ function parseBoldText(text: string) {
   });
 }
 
-export default function AICoachSection({ profile, logs }: AICoachSectionProps) {
+export default function AICoachSection({ profile, logs, onOpenRegisterModal }: AICoachSectionProps) {
   const [activeSubTab, setActiveSubTab] = useState<'profile-analyser' | 'direct-chat' | 'improvements-list'>('direct-chat');
 
   // Interactive Pitch Blackboard state
@@ -599,15 +601,6 @@ Para un desarrollo óptimo, le recomiendo comenzar alternando constantemente ent
 5. **Supresión de ultraprocesados:** Evite alimentos ricos en azúcares libres, harinas refinadas o fritos pesados que ralentizan la asimilación energética.
 
 Le sugiero dar máxima prioridad a los puntos **1 y 3** para asegurar que mantenga una resistencia insuperable durante la totalidad del encuentro.`;
-        } else if (queryNormalized.includes('reloj') || queryNormalized.includes('xiaomi') || queryNormalized.includes('smartwatch') || queryNormalized.includes('banda') || queryNormalized.includes('pulsomet') || queryNormalized.includes('wearable')) {
-          fallbackReply = `Hola, ${profile?.nombre || 'Deportista'}. Qué excelente iniciativa la de integrar los datos de su reloj inteligente o banda deportiva Xiaomi en su preparación física táctica:
-
-1. **Campos de Registro Habilitados:** Hemos habilitado campos dedicados en el formulario de "Registrar Jornada" para que ingrese su frecuencia cardíaca promedio (BPM) y distancia recorrida (KM) directamente al anotar sus partidos o entrenamientos.
-2. **Evaluación de Resistencia:** Su Coach AI evaluará su rango cardiovascular de esfuerzo (siendo el 85% al 95% el óptimo en sprints anaeróbicos breves) y estimará si el recorrido total en kilómetros es de alto rendimiento para su posición: **${profile?.posicion || 'Jugador'}**.
-3. **Análisis por Rendimiento:** Recuerde registrar el entrenamiento o partido con el rango medido en su Xiaomi para que El Míster lo tenga en cuenta en su próximo plan táctico global.
-4. **Control del Descanso:** El reposo celular (horas de sueño profundo reportadas por su Xiaomi) es vital para evitar el sobreentrenamiento y desgarros musculares.
-
-Sume distancias y pulsaciones hoy mismo ingresando sus promedios en "Registrar Jornada".`;
         } else {
           fallbackReply = `Hola, ${profile?.nombre || 'Deportista'}. En este momento el módulo de consejería táctica se encuentra en modo local fuera de línea, pero le brindo la siguiente sugerencia formal en relación a su consulta sobre "${msgText}":
 Como futbolista de la posición **${profile?.posicion || 'Jugador'}**, la disciplina corporal diaria y la madurez táctica de jugar con fluidez y a dos toques de cara optimizan notablemente el juego. Continúe entrenando arduamente y manteniendo pautas formales de rendimiento técnico. ¡Siga progresando!`;
@@ -627,7 +620,7 @@ Como futbolista de la posición **${profile?.posicion || 'Jugador'}**, la discip
 
   // Recommended queries for the direct chat
   const chatQueries = [
-    { text: '¿Tengo un reloj Xiaomi, qué podemos hacer con él para mejorar mi rendimiento?', label: 'Reloj Xiaomi ⌚' },
+    { text: '¿Cómo mejorar mis reflejos y la toma de decisión rápida bajo presión?', label: 'Reflejos 🧠' },
     { text: '¿Cómo aumentar explosividad en sprint corto de 10m?', label: 'Sprints ⚡' },
     { text: '¿Qué comer de carbohidratos 24 horas antes de competir?', label: 'Dieta 🍏' },
     { text: '¿Cómo perfilarme óptimamente para recibir y girar en un toque?', label: 'Perfilado ⚽' },
@@ -683,7 +676,7 @@ Como futbolista de la posición **${profile?.posicion || 'Jugador'}**, la discip
       <div className="bg-neutral-900 p-1 rounded-2xl border border-white/[0.04] grid grid-cols-3 gap-1.5 max-w-lg mx-auto">
         <button
           onClick={() => setActiveSubTab('direct-chat')}
-          className={`py-2 px-1 text-[10px] sm:text-xs font-black uppercase tracking-wider rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer ${
+          className={`py-2 px-1 text-[10px] sm:text-[11px] font-black uppercase tracking-wider rounded-xl transition flex items-center justify-center gap-1 cursor-pointer ${
             activeSubTab === 'direct-chat'
               ? 'bg-neutral-850 text-emerald-400 font-extrabold shadow-sm'
               : 'text-neutral-500 hover:text-neutral-300'
@@ -693,26 +686,26 @@ Como futbolista de la posición **${profile?.posicion || 'Jugador'}**, la discip
           Consulta DT
         </button>
         <button
-          onClick={() => setActiveSubTab('improvements-list')}
-          className={`py-2 px-1 text-[10px] sm:text-xs font-black uppercase tracking-wider rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer ${
-            activeSubTab === 'improvements-list'
-              ? 'bg-neutral-850 text-emerald-400 font-extrabold shadow-sm'
-              : 'text-neutral-500 hover:text-neutral-300'
-          }`}
-        >
-          <Zap className="w-3.5 h-3.5 shrink-0 text-yellow-500" />
-          Roadmap (Próximamente)
-        </button>
-        <button
           onClick={() => setActiveSubTab('profile-analyser')}
-          className={`py-2 px-1 text-[10px] sm:text-xs font-black uppercase tracking-wider rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer ${
+          className={`py-2 px-1 text-[10px] sm:text-[11px] font-black uppercase tracking-wider rounded-xl transition flex items-center justify-center gap-1 cursor-pointer ${
             activeSubTab === 'profile-analyser'
               ? 'bg-neutral-850 text-emerald-400 font-extrabold shadow-sm'
               : 'text-neutral-500 hover:text-neutral-300'
           }`}
         >
           <Clipboard className="w-3.5 h-3.5 shrink-0" />
-          Análisis Táctico
+          Táctico
+        </button>
+        <button
+          onClick={() => setActiveSubTab('improvements-list')}
+          className={`py-2 px-1 text-[10px] sm:text-[11px] font-black uppercase tracking-wider rounded-xl transition flex items-center justify-center gap-1 cursor-pointer ${
+            activeSubTab === 'improvements-list'
+              ? 'bg-neutral-850 text-emerald-400 font-extrabold shadow-sm'
+              : 'text-neutral-500 hover:text-neutral-300'
+          }`}
+        >
+          <Zap className="w-3.5 h-3.5 shrink-0 text-yellow-500" />
+          Roadmap
         </button>
       </div>
 

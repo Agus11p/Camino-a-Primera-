@@ -4,6 +4,7 @@ import { PlayerProfile, ActivityLog, DynamicGoal } from './types';
 import SplashWelcome from './components/SplashWelcome';
 import ProfileSetup from './components/ProfileSetup';
 import Dashboard from './components/Dashboard';
+import HomeHub from './components/HomeHub';
 import GoalsSection from './components/GoalsSection';
 import StatisticsCharts from './components/StatisticsCharts';
 import HistoryFeed from './components/HistoryFeed';
@@ -23,7 +24,8 @@ import {
   LogOut,
   Sparkles,
   User,
-  Settings
+  Settings,
+  Home
 } from 'lucide-react';
 
 export default function App() {
@@ -204,7 +206,7 @@ export default function App() {
   });
 
   // 2. Navigation & Modal States
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'goals' | 'coach' | 'config'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'inicio' | 'dashboard' | 'goals' | 'coach' | 'config'>('inicio');
   const [showSetup, setShowSetup] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [showDiarioModal, setShowDiarioModal] = useState(false);
@@ -517,6 +519,23 @@ export default function App() {
                     exit={{ opacity: 0, scale: 0.98, y: -8 }}
                     transition={{ duration: 0.2, ease: "easeOut" }}
                   >
+                    {activeTab === 'inicio' && (
+                      <HomeHub
+                        profile={profile!}
+                        logs={logs}
+                        onNavigateToTab={(tab) => {
+                          if (tab === 'inicio' || tab === 'dashboard' || tab === 'goals' || tab === 'coach' || tab === 'config') {
+                            setActiveTab(tab);
+                          }
+                        }}
+                        onOpenRegisterModal={() => {
+                          setEditLogTarget(null);
+                          setIsRegisterOpen(true);
+                        }}
+                        onOpenDiario={() => setShowDiarioModal(true)}
+                      />
+                    )}
+
                     {activeTab === 'dashboard' && (
                       <Dashboard
                         profile={profile!}
@@ -534,7 +553,7 @@ export default function App() {
                         onUpdateAssistsGoal={setAssistsGoal}
                         onNavigateToTab={(tab) => {
                           if (tab === 'history') setShowDiarioModal(true);
-                          else if (tab === 'dashboard' || tab === 'goals' || tab === 'coach') setActiveTab(tab);
+                          else if (tab === 'inicio' || tab === 'dashboard' || tab === 'goals' || tab === 'coach') setActiveTab(tab);
                         }}
                       />
                     )}
@@ -553,6 +572,10 @@ export default function App() {
                       <AICoachSection
                         profile={profile!}
                         logs={logs}
+                        onOpenRegisterModal={() => {
+                          setEditLogTarget(null);
+                          setIsRegisterOpen(true);
+                        }}
                       />
                     )}
 
@@ -574,7 +597,17 @@ export default function App() {
       {/* Persistent Bottom Tab Shell Bar */}
       {currentView === 'app' && (
         <nav className="fixed bottom-0 left-0 right-0 bg-neutral-900/90 backdrop-blur-md border-t border-neutral-800 py-2.5 z-40 max-w-2xl mx-auto w-full px-4 rounded-t-xl">
-          <div className="grid grid-cols-4 gap-1">
+          <div className="grid grid-cols-5 gap-1">
+            <button
+              onClick={() => setActiveTab('inicio')}
+              className={`flex flex-col items-center justify-center gap-1 transition cursor-pointer ${
+                activeTab === 'inicio' ? 'text-emerald-400 font-extrabold scale-[1.03]' : 'text-neutral-500 hover:text-neutral-400'
+              }`}
+            >
+              <Home className="w-5 h-5 shrink-0" />
+              <span className="text-[10px] font-bold uppercase tracking-wider font-sans">Inicio</span>
+            </button>
+
             <button
               onClick={() => setActiveTab('dashboard')}
               className={`flex flex-col items-center justify-center gap-1 transition cursor-pointer ${
@@ -582,7 +615,7 @@ export default function App() {
               }`}
             >
               <Trophy className="w-5 h-5 shrink-0" />
-              <span className="text-[10px] font-bold uppercase tracking-wider font-sans">Inicio</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider font-sans">Métricas</span>
             </button>
 
             <button
