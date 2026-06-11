@@ -578,7 +578,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-neutral-900">
+    <div className={`min-h-screen bg-neutral-950 text-neutral-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-neutral-900 ${currentView === 'app' ? 'pb-[115px]' : 'pb-[70px]'}`}>
       
       {/* Upper Global Navigation Header only on Active App */}
       {currentView === 'app' && (
@@ -818,7 +818,7 @@ export default function App() {
 
       {/* Persistent Bottom Tab Shell Bar */}
       {currentView === 'app' && (
-        <nav className="fixed bottom-0 left-0 right-0 bg-neutral-900/90 backdrop-blur-md border-t border-neutral-800 py-2.5 z-40 max-w-2xl mx-auto w-full px-4 rounded-t-xl">
+        <nav className="fixed bottom-[50px] left-0 right-0 bg-neutral-900/90 backdrop-blur-md border-t border-neutral-800 py-2.5 z-40 max-w-2xl mx-auto w-full px-4 rounded-t-xl">
           <div className="grid grid-cols-4 gap-1">
             <button
               onClick={() => {
@@ -928,23 +928,36 @@ export default function App() {
         <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-50 overflow-y-auto px-4 py-8 flex items-center justify-center">
           <div className="bg-neutral-900 border border-white/10 rounded-2xl max-w-lg w-full p-6 space-y-5 text-left relative scrollbar-none">
             <h3 className="text-sm font-black text-white uppercase tracking-wider font-mono flex items-center gap-2">
-              🔧 Crear Tablas en Supabase
+              🔧 Crear o Actualizar Tablas en Supabase
             </h3>
             
             <p className="text-xs text-neutral-400 leading-relaxed font-sans">
-              Para guardar tus goles, asistencias y objetivos en la nube de Supabase, necesitas crear las tablas correspondientes. Sigue estos 3 sencillos pasos:
+              Tu base de datos actual en Supabase no tiene las columnas más recientes (como <b>atajadas</b> o <b>valla_invicta</b>). 
+              Sigue estos pasos rápidos para solucionarlo sin perder ningún dato:
             </p>
 
             <ol className="text-xs text-neutral-300 space-y-1.5 list-decimal list-inside font-sans">
               <li>Ingresa a tu panel de control de <b>Supabase</b>.</li>
-              <li>Busca y abre la pestaña de <b>"SQL Editor"</b> en el menú lateral.</li>
-              <li>Crea un "New Query", pega el código de abajo y haz clic en <b>"Run"</b>.</li>
+              <li>Abre la pestaña de <b>"SQL Editor"</b> en el menú lateral izquierdo.</li>
+              <li>Crea una nueva consulta (<b>New Query</b>), pega el código de abajo y haz clic en <b>"Run"</b>.</li>
             </ol>
 
             <div className="relative">
-              <span className="absolute right-3 top-3 text-[9px] font-mono text-neutral-500 uppercase">Esquema SQL</span>
-              <pre className="text-[10px] font-mono text-emerald-400 bg-neutral-950 p-4 rounded-xl border border-white/5 overflow-x-auto max-h-56 select-all whitespace-pre">
-{`--- 1. Perfiles de Jugador
+              <span className="absolute right-3 top-3 text-[9px] font-mono text-emerald-400 uppercase font-black">Código Listo</span>
+              <pre className="text-[10px] font-mono text-emerald-450 bg-neutral-950 p-4 rounded-xl border border-white/5 overflow-x-auto max-h-60 select-all whitespace-pre">
+{`--- 🚀 OPCIÓN A: SI YA TIENES TABLAS CREADAS (MIGRACIÓN SIN PERDER DATOS)
+--- Simplemente ejecuta estas líneas para agregar las nuevas columnas a tu tabla existente:
+
+ALTER TABLE public.logs ADD COLUMN IF NOT EXISTS atajadas INTEGER DEFAULT 0;
+ALTER TABLE public.logs ADD COLUMN IF NOT EXISTS valla_invicta BOOLEAN DEFAULT false;
+ALTER TABLE public.logs ADD COLUMN IF NOT EXISTS timestamp BIGINT;
+
+--- -----------------------------------------------------
+
+--- 🆕 OPCIÓN B: SI ESTÁS CREANDO LAS TABLAS DESDE CERO
+--- (Copia y ejecuta todo este bloque si es un proyecto nuevo):
+
+--- 1. Perfiles de Jugador
 CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   nombre TEXT NOT NULL,
@@ -1004,7 +1017,12 @@ CREATE POLICY "Goals delete policy" ON public.goals FOR DELETE USING (auth.uid()
             <div className="flex justify-end gap-3 pt-2">
               <button
                 onClick={() => {
-                  navigator.clipboard.writeText(`--- 1. Perfiles de Jugador
+                  navigator.clipboard.writeText(`--- OPCIÓN A: SI YA TIENES TABLAS (MIGRACIÓN)
+ALTER TABLE public.logs ADD COLUMN IF NOT EXISTS atajadas INTEGER DEFAULT 0;
+ALTER TABLE public.logs ADD COLUMN IF NOT EXISTS valla_invicta BOOLEAN DEFAULT false;
+ALTER TABLE public.logs ADD COLUMN IF NOT EXISTS timestamp BIGINT;
+
+--- OPCIÓN B: SI CREAS DESDE CERO
 CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   nombre TEXT NOT NULL,
@@ -1022,7 +1040,6 @@ ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Profiles select policy" ON public.profiles FOR SELECT USING (auth.uid() = id);
 CREATE POLICY "Profiles insert policy" ON public.profiles FOR ALL USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
 
---- 2. Historial de Partidos (Goles y Asistencias)
 CREATE TABLE IF NOT EXISTS public.logs (
   id TEXT PRIMARY KEY,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -1043,7 +1060,6 @@ CREATE POLICY "Logs insert policy" ON public.logs FOR INSERT WITH CHECK (auth.ui
 CREATE POLICY "Logs update policy" ON public.logs FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Logs delete policy" ON public.logs FOR DELETE USING (auth.uid() = user_id);
 
---- 3. Metas de la Temporada
 CREATE TABLE IF NOT EXISTS public.goals (
   id TEXT PRIMARY KEY,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -1058,11 +1074,11 @@ CREATE POLICY "Goals select policy" ON public.goals FOR SELECT USING (auth.uid()
 CREATE POLICY "Goals insert policy" ON public.goals FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Goals update policy" ON public.goals FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Goals delete policy" ON public.goals FOR DELETE USING (auth.uid() = user_id);`);
-                  alert("Código SQL copiado al portapapeles. ¡Pégalo en Supabase!");
+                  alert("Código SQL copiado al portapapeles. ¡Pégalo en tu SQL Editor de Supabase!");
                 }}
                 className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 text-xs font-black uppercase tracking-wider rounded-xl transition cursor-pointer"
               >
-                Copiar Código SQL
+                Copiar Todo el Código SQL
               </button>
               <button
                 onClick={() => setShowSqlHelperModal(false)}
@@ -1074,6 +1090,21 @@ CREATE POLICY "Goals delete policy" ON public.goals FOR DELETE USING (auth.uid()
           </div>
         </div>
       )}
+
+      {/* 4. Future AdSense Container */}
+      <div 
+        id="ad-container" 
+        className="fixed bottom-0 left-0 right-0 h-[50px] bg-neutral-900/60 backdrop-blur-md border-t border-white/[0.05] z-50 max-w-2xl mx-auto w-full flex items-center justify-center text-center transition-all px-4"
+      >
+        <div className="flex items-center gap-2">
+          <span className="text-[9px] font-black tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded font-mono uppercase">
+            Anuncio
+          </span>
+          <span className="text-[10px] font-bold tracking-widest text-neutral-400 uppercase font-sans">
+            Espacio Publicitario
+          </span>
+        </div>
+      </div>
     </div>
   );
 }
