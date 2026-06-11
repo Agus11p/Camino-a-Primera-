@@ -51,7 +51,7 @@ export default function UnrespiroAuth({ onAuthSuccess }: UnrespiroAuthProps) {
     return () => window.removeEventListener('message', handleMessage);
   }, [onAuthSuccess]);
 
-  // Social Auth Handler with Popup to work within AI Studio iframe bounds
+  // Social Auth Handler with Popup/Redirect support depending on the context
   const handleSocialLogin = async (provider: 'google') => {
     setError(null);
     setSuccess(null);
@@ -63,28 +63,43 @@ export default function UnrespiroAuth({ onAuthSuccess }: UnrespiroAuthProps) {
 
     try {
       setLoading(true);
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-          redirectTo: window.location.origin,
-          skipBrowserRedirect: true,
-        }
-      });
-      if (error) throw error;
+      const isIframe = typeof window !== 'undefined' && window.self !== window.top;
 
-      if (data?.url) {
-        // Safe popup generation centered coordinates
-        const width = 600;
-        const height = 750;
-        const left = window.screen.width / 2 - width / 2;
-        const top = window.screen.height / 2 - height / 2;
-        window.open(
-          data.url,
-          'supabase_oauth_popup',
-          `width=${width},height=${height},left=${left},top=${top},scrollbars=yes,status=no`
-        );
+      if (isIframe) {
+        // En un iframe (como el previsualizador de AI Studio), debemos usar un popup para evitar bloqueos
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider,
+          options: {
+            redirectTo: window.location.origin,
+            skipBrowserRedirect: true,
+          }
+        });
+        if (error) throw error;
+
+        if (data?.url) {
+          // Safe popup generation centered coordinates
+          const width = 600;
+          const height = 750;
+          const left = window.screen.width / 2 - width / 2;
+          const top = window.screen.height / 2 - height / 2;
+          window.open(
+            data.url,
+            'supabase_oauth_popup',
+            `width=${width},height=${height},left=${left},top=${top},scrollbars=yes,status=no`
+          );
+        } else {
+          throw new Error('No se recibió la URL de autorización de Supabase.');
+        }
       } else {
-        throw new Error('No se recibió la URL de autorización de Supabase.');
+        // En celular o PC directo (fuera de iframe), usamos redirección directa para máxima compatibilidad
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider,
+          options: {
+            redirectTo: window.location.origin,
+            skipBrowserRedirect: false,
+          }
+        });
+        if (error) throw error;
       }
     } catch (err: any) {
       setError(err.message || `Error al conectar con ${provider}.`);
