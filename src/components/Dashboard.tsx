@@ -3,6 +3,8 @@ import { motion } from 'motion/react';
 import { PlayerProfile, ActivityLog } from '../types';
 import { calculateStreak } from '../utils/streakHelper';
 import { calculateBadges } from '../utils/badgeHelper';
+import { LanguageCode, getTranslation } from '../lib/i18n';
+import { playClickSound, playSuccessSound } from '../lib/audio';
 import { 
   Trophy, 
   Flame, 
@@ -14,7 +16,6 @@ import {
   ChevronRight,
   User,
   Scale,
-  Sparkles,
   BookOpen,
   AreaChart,
   Sliders,
@@ -32,7 +33,8 @@ interface DashboardProps {
   onOpenDiario?: () => void;
   onUpdateGoalsGoal: (meta: number) => void;
   onUpdateAssistsGoal: (meta: number) => void;
-  onNavigateToTab: (tab: 'inicio' | 'dashboard' | 'goals' | 'coach' | 'history') => void;
+  onNavigateToTab: (tab: 'inicio' | 'dashboard' | 'goals' | 'history') => void;
+  language?: LanguageCode;
 }
 
 export default function Dashboard({
@@ -47,6 +49,7 @@ export default function Dashboard({
   onUpdateGoalsGoal,
   onUpdateAssistsGoal,
   onNavigateToTab,
+  language = 'ES',
 }: DashboardProps) {
   // Goals Targets modal states
   const [showGoalsModal, setShowGoalsModal] = useState(false);
@@ -55,6 +58,9 @@ export default function Dashboard({
   
   const [tempGoalsTarget, setTempGoalsTarget] = useState(goalsGoal);
   const [tempAssistsTarget, setTempAssistsTarget] = useState(assistsGoal);
+
+  const t = (key: any) => getTranslation(key, language);
+  const triggerClick = () => playClickSound();
 
   const isArquero = profile.posicion === 'Arquero';
 

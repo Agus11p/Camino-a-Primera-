@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { DynamicGoal, ActivityLog, BadgeCount } from '../types';
+import { DynamicGoal, ActivityLog } from '../types';
 import { calculateBadges } from '../utils/badgeHelper';
 import { triggerConfetti } from '../utils/confetti';
+import { LanguageCode, getTranslation } from '../lib/i18n';
+import { playClickSound, playGoalCompleteSound } from '../lib/audio';
 import { 
   Trophy, 
   Trash2, 
@@ -20,6 +22,7 @@ interface GoalsSectionProps {
   onAddGoal: (texto: string, plazo: 'Corto' | 'Mediano' | 'Largo') => void;
   onToggleGoal: (id: string) => void;
   onDeleteGoal: (id: string) => void;
+  language?: LanguageCode;
 }
 
 export default function GoalsSection({
@@ -28,9 +31,13 @@ export default function GoalsSection({
   onAddGoal,
   onToggleGoal,
   onDeleteGoal,
+  language = 'ES',
 }: GoalsSectionProps) {
   const [newGoalText, setNewGoalText] = useState('');
   const [selectedPlazo, setSelectedPlazo] = useState<'Corto' | 'Mediano' | 'Largo'>('Corto');
+
+  const t = (key: any) => getTranslation(key, language);
+  const triggerClick = () => playClickSound();
 
   // Load all current badges
   const unlockedBadges = calculateBadges(logs);
@@ -38,15 +45,18 @@ export default function GoalsSection({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newGoalText.trim()) return;
-
+    triggerClick();
     onAddGoal(newGoalText.trim(), selectedPlazo);
     setNewGoalText('');
   };
 
   const handleCompleteGoal = (id: string, currentlyCompleted: boolean) => {
     if (!currentlyCompleted) {
-      // Complete action -> launch confetti
+      // Complete action -> launch confetti and success audio fanfare
       triggerConfetti();
+      playGoalCompleteSound();
+    } else {
+      triggerClick();
     }
     onToggleGoal(id);
   };
@@ -245,7 +255,10 @@ export default function GoalsSection({
                           whileHover={{ scale: 1.1, color: "#f87171" }}
                           whileTap={{ scale: 0.9 }}
                           type="button"
-                          onClick={() => onDeleteGoal(g.id)}
+                          onClick={() => {
+                            triggerClick();
+                            onDeleteGoal(g.id);
+                          }}
                           className="text-neutral-500 p-1 rounded-lg hover:bg-white/5 transition shrink-0 cursor-pointer"
                           title="Borrar objetivo"
                         >

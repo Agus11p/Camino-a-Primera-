@@ -11,9 +11,10 @@ import HistoryFeed from './components/HistoryFeed';
 import ProfileCardView from './components/ProfileCardView';
 import DailyLogModal from './components/DailyLogModal';
 import UnrespiroAuth from './components/UnrespiroAuth';
-import AICoachSection from './components/AICoachSection';
 import SettingsSection from './components/SettingsSection';
 import { supabase, isSupabaseConfigured } from './lib/supabase';
+import { LanguageCode, getTranslation } from './lib/i18n';
+import { playClickSound, playSuccessSound } from './lib/audio';
 
 import { 
   Trophy, 
@@ -22,7 +23,6 @@ import {
   BarChart2, 
   ShieldAlert, 
   LogOut,
-  Sparkles,
   User,
   Settings,
   Home
@@ -205,8 +205,24 @@ export default function App() {
     return saved ? JSON.parse(saved) : [];
   });
 
+  const [language, setLanguage] = useState<LanguageCode>(() => {
+    const saved = localStorage.getItem('camino_language') || localStorage.getItem('mister_language');
+    if (saved === 'PT' || saved === 'EN' || saved === 'ES') return saved as LanguageCode;
+    return 'ES';
+  });
+
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(() => {
+    const saved = localStorage.getItem('camino_sound_enabled');
+    return saved !== 'false';
+  });
+
+  // Global translation dispatcher
+  const t = (key: Parameters<typeof getTranslation>[0]) => {
+    return getTranslation(key, language);
+  };
+
   // 2. Navigation & Modal States
-  const [activeTab, setActiveTab] = useState<'inicio' | 'dashboard' | 'goals' | 'coach' | 'config'>('inicio');
+  const [activeTab, setActiveTab] = useState<'inicio' | 'dashboard' | 'goals' | 'config'>('inicio');
   const [showSetup, setShowSetup] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [showDiarioModal, setShowDiarioModal] = useState(false);
@@ -524,7 +540,7 @@ export default function App() {
                         profile={profile!}
                         logs={logs}
                         onNavigateToTab={(tab) => {
-                          if (tab === 'inicio' || tab === 'dashboard' || tab === 'goals' || tab === 'coach' || tab === 'config') {
+                          if (tab === 'inicio' || tab === 'dashboard' || tab === 'goals' || tab === 'config') {
                             setActiveTab(tab);
                           }
                         }}
@@ -533,6 +549,7 @@ export default function App() {
                           setIsRegisterOpen(true);
                         }}
                         onOpenDiario={() => setShowDiarioModal(true)}
+                        language={language}
                       />
                     )}
 
@@ -553,8 +570,9 @@ export default function App() {
                         onUpdateAssistsGoal={setAssistsGoal}
                         onNavigateToTab={(tab) => {
                           if (tab === 'history') setShowDiarioModal(true);
-                          else if (tab === 'inicio' || tab === 'dashboard' || tab === 'goals' || tab === 'coach') setActiveTab(tab);
+                          else if (tab === 'inicio' || tab === 'dashboard' || tab === 'goals') setActiveTab(tab);
                         }}
+                        language={language}
                       />
                     )}
 
@@ -565,17 +583,7 @@ export default function App() {
                         onAddGoal={handleAddDynamicGoal}
                         onToggleGoal={handleToggleGoal}
                         onDeleteGoal={handleDeleteGoal}
-                      />
-                    )}
-
-                    {activeTab === 'coach' && (
-                      <AICoachSection
-                        profile={profile!}
-                        logs={logs}
-                        onOpenRegisterModal={() => {
-                          setEditLogTarget(null);
-                          setIsRegisterOpen(true);
-                        }}
+                        language={language}
                       />
                     )}
 
@@ -584,6 +592,16 @@ export default function App() {
                         profile={profile!}
                         onEditProfile={() => setShowSetup(true)}
                         onResetApp={handleResetApp}
+                        language={language}
+                        onLanguageChange={(l) => {
+                          setLanguage(l);
+                          localStorage.setItem('camino_language', l);
+                        }}
+                        soundEnabled={soundEnabled}
+                        onSoundEnabledChange={(s) => {
+                          setSoundEnabled(s);
+                          localStorage.setItem('camino_sound_enabled', s ? 'true' : 'false');
+                        }}
                       />
                     )}
                   </motion.div>
@@ -597,55 +615,57 @@ export default function App() {
       {/* Persistent Bottom Tab Shell Bar */}
       {currentView === 'app' && (
         <nav className="fixed bottom-0 left-0 right-0 bg-neutral-900/90 backdrop-blur-md border-t border-neutral-800 py-2.5 z-40 max-w-2xl mx-auto w-full px-4 rounded-t-xl">
-          <div className="grid grid-cols-5 gap-1">
+          <div className="grid grid-cols-4 gap-1">
             <button
-              onClick={() => setActiveTab('inicio')}
+              onClick={() => {
+                playClickSound();
+                setActiveTab('inicio');
+              }}
               className={`flex flex-col items-center justify-center gap-1 transition cursor-pointer ${
                 activeTab === 'inicio' ? 'text-emerald-400 font-extrabold scale-[1.03]' : 'text-neutral-500 hover:text-neutral-400'
               }`}
             >
               <Home className="w-5 h-5 shrink-0" />
-              <span className="text-[10px] font-bold uppercase tracking-wider font-sans">Inicio</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider font-sans">{t('tab_inicio')}</span>
             </button>
 
             <button
-              onClick={() => setActiveTab('dashboard')}
+              onClick={() => {
+                playClickSound();
+                setActiveTab('dashboard');
+              }}
               className={`flex flex-col items-center justify-center gap-1 transition cursor-pointer ${
                 activeTab === 'dashboard' ? 'text-emerald-400 font-extrabold scale-[1.03]' : 'text-neutral-500 hover:text-neutral-400'
               }`}
             >
               <Trophy className="w-5 h-5 shrink-0" />
-              <span className="text-[10px] font-bold uppercase tracking-wider font-sans">Métricas</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider font-sans">{t('tab_dashboard')}</span>
             </button>
 
             <button
-              onClick={() => setActiveTab('coach')}
-              className={`flex flex-col items-center justify-center gap-1 transition cursor-pointer ${
-                activeTab === 'coach' ? 'text-emerald-400 font-extrabold scale-[1.03]' : 'text-neutral-500 hover:text-neutral-400'
-              }`}
-            >
-              <Sparkles className="w-5 h-5 shrink-0 text-emerald-400" />
-              <span className="text-[10px] font-bold uppercase tracking-wider font-sans">Coach</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('goals')}
+              onClick={() => {
+                playClickSound();
+                setActiveTab('goals');
+              }}
               className={`flex flex-col items-center justify-center gap-1 transition cursor-pointer ${
                 activeTab === 'goals' ? 'text-emerald-400 font-extrabold scale-[1.03]' : 'text-neutral-500 hover:text-neutral-400'
               }`}
             >
               <Target className="w-5 h-5 shrink-0" />
-              <span className="text-[10px] font-bold uppercase tracking-wider font-sans">Metas</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider font-sans">{t('tab_goals')}</span>
             </button>
 
             <button
-              onClick={() => setActiveTab('config')}
+              onClick={() => {
+                playClickSound();
+                setActiveTab('config');
+              }}
               className={`flex flex-col items-center justify-center gap-1 transition cursor-pointer ${
                 activeTab === 'config' ? 'text-emerald-400 font-extrabold scale-[1.03]' : 'text-neutral-500 hover:text-neutral-400'
               }`}
             >
               <Settings className="w-5 h-5 shrink-0" />
-              <span className="text-[10px] font-bold uppercase tracking-wider font-sans">Ajustes</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider font-sans">{t('tab_config')}</span>
             </button>
           </div>
         </nav>

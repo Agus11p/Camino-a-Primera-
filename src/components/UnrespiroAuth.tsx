@@ -4,7 +4,6 @@ import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { 
   Sparkles, 
   Chrome, 
-  Apple, 
   Loader2, 
   AlertCircle
 } from 'lucide-react';
@@ -16,7 +15,6 @@ interface UnrespiroAuthProps {
 export default function UnrespiroAuth({ onAuthSuccess }: UnrespiroAuthProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showAppleComingSoon, setShowAppleComingSoon] = useState(false);
 
   // Listen for success message from popup (after OAuth callback completes)
   useEffect(() => {
@@ -42,7 +40,7 @@ export default function UnrespiroAuth({ onAuthSuccess }: UnrespiroAuthProps) {
   }, [onAuthSuccess]);
 
   // Social Auth Handler
-  const handleSocialLogin = async (provider: 'google' | 'apple') => {
+  const handleSocialLogin = async (provider: 'google') => {
     setError(null);
     
     // If using the developer default Supabase url, OAuth redirect will fail on arbitrary Cloud Run preview URLs.
@@ -129,7 +127,7 @@ export default function UnrespiroAuth({ onAuthSuccess }: UnrespiroAuthProps) {
             <span className="italic font-light text-neutral-300">Camino Diario</span>
           </h1>
           <p className="text-xs sm:text-sm text-neutral-450 leading-relaxed max-w-sm font-light">
-            Monitorea goles, asistencias de partidos y mantén tu estado físico enfocado de manera simple y minimalista.
+            Monitorea goles, asistencias de partidos y mantén tu estado físico de manera simple y minimalista.
           </p>
         </div>
 
@@ -155,7 +153,7 @@ export default function UnrespiroAuth({ onAuthSuccess }: UnrespiroAuthProps) {
               Iniciar sesión
             </h3>
             <p className="text-xs text-neutral-500 leading-relaxed">
-              Ingresa de forma instantánea mediante tu cuenta preferida.
+              Ingresa de forma instantánea mediante tu cuenta de Google.
             </p>
           </div>
 
@@ -174,18 +172,6 @@ export default function UnrespiroAuth({ onAuthSuccess }: UnrespiroAuthProps) {
               ) : (
                 <span className="text-[9px] font-mono text-neutral-900/60 bg-neutral-950/10 px-2 py-0.5 rounded-md font-bold">ACTIVO</span>
               )}
-            </button>
-
-            <button
-              onClick={() => setShowAppleComingSoon(true)}
-              className="w-full flex items-center justify-between gap-4 bg-[#171918] hover:bg-white/5 text-neutral-200 font-bold py-4.5 px-5 rounded-xl border border-white/5 transition duration-200 text-xs uppercase tracking-wider"
-              type="button"
-            >
-              <div className="flex items-center gap-3">
-                <Apple className="w-4 h-4 text-neutral-300" />
-                <span>Continuar con Manzana</span>
-              </div>
-              <span className="text-[9px] font-mono text-neutral-450 bg-white/5 border border-white/10 px-2 py-0.5 rounded-md">PRÓXIMAMENTE</span>
             </button>
           </div>
         </div>
@@ -207,42 +193,6 @@ export default function UnrespiroAuth({ onAuthSuccess }: UnrespiroAuthProps) {
           <span>Aplicación Camino Futbolista v1.2</span>
         </p>
       </div>
-
-      {/* Apple Coming Soon Overlay */}
-      <AnimatePresence>
-        {showAppleComingSoon && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-center justify-center p-4"
-          >
-            <motion.div
-              initial={{ scale: 0.95, y: 15 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.95, y: 15 }}
-              className="bg-[#0f1110] border border-white/10 p-6 rounded-2xl max-w-sm w-full text-center space-y-4 shadow-2xl relative"
-            >
-              <div className="w-12 h-12 bg-white/5 border border-white/10 rounded-full flex items-center justify-center mx-auto">
-                <Apple className="w-6 h-6 text-white" />
-              </div>
-              <div className="space-y-1.5">
-                <h3 className="text-lg font-black text-white">Iniciar sesión con Apple</h3>
-                <p className="text-xs text-neutral-450 leading-relaxed">
-                  Esta característica estará disponible <strong>próximamente</strong> para que puedas ingresar con tu Apple ID de forma rápida y segura.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowAppleComingSoon(false)}
-                className="w-full bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black py-2.5 px-4 rounded-xl text-xs uppercase tracking-wider transition"
-              >
-                Entendido
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
