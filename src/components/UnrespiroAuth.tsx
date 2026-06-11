@@ -180,7 +180,7 @@ export default function UnrespiroAuth({ onAuthSuccess }: UnrespiroAuthProps) {
         <div className="text-center">
           <button
             onClick={() => onAuthSuccess(null, true)}
-            className="text-[11px] text-neutral-450 hover:text-emerald-400 font-bold uppercase tracking-wider transition underline decoration-neutral-750 hover:decoration-emerald-500 underline-offset-4"
+            className="text-[11px] text-neutral-450 hover:text-emerald-400 font-bold uppercase tracking-wider transition underline decoration-neutral-750 hover:decoration-emerald-500 underline-offset-4 cursor-pointer"
           >
             Entrar como Invitado (Modo Sin Cuenta / Local)
           </button>
