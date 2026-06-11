@@ -154,6 +154,7 @@ export default function App() {
   const loadUserData = async () => {
     if (!supabase || !sessionUser) return;
     try {
+      // 1. Fetch ALL cloud data first into local variables (Source of Truth)
       // Load profile
       const { data: profileData, error: profileErr } = await supabase
         .from('profiles')
@@ -162,21 +163,6 @@ export default function App() {
         .maybeSingle();
       
       if (profileErr) throw profileErr;
-      
-      if (profileData) {
-        setProfile({
-          nombre: profileData.nombre,
-          club: profileData.club,
-          edad: profileData.edad,
-          peso: profileData.peso,
-          altura: profileData.altura,
-          piernaHabil: profileData.pierna_habil || profileData.piernaHabil,
-          posicion: profileData.posicion,
-          habilidad1: profileData.habilidades?.[0] || 'Velocidad',
-          habilidad2: profileData.habilidades?.[1] || 'Pase',
-          habilidades: profileData.habilidades || []
-        });
-      }
 
       // Load logs
       const { data: logsData, error: logsErr } = await supabase
@@ -186,20 +172,6 @@ export default function App() {
         .order('timestamp', { ascending: false });
       
       if (logsErr) throw logsErr;
-      
-      if (logsData) {
-        setLogs(logsData.map((l: any) => ({
-          id: l.id,
-          tipo: l.tipo,
-          fecha: l.fecha,
-          goles: l.goles || 0,
-          asistencias: l.asistencias || 0,
-          atajadas: l.atajadas || 0,
-          vallaInvicta: !!l.valla_invicta,
-          reflexion: l.reflexion || '',
-          timestamp: l.timestamp || Date.now()
-        })));
-      }
 
       // Load goals
       const { data: goalsData, error: goalsErr } = await supabase
@@ -208,26 +180,67 @@ export default function App() {
         .eq('user_id', sessionUser.id);
       
       if (goalsErr) throw goalsErr;
-      
-      if (goalsData) {
-        setGoals(goalsData.map((g: any) => ({
-          id: g.id,
-          texto: g.texto,
-          completado: g.completado,
-          plazo: g.plazo
-        })));
-      }
 
-      // Smart local-to-cloud sync prompt
-      const savedProfile = localStorage.getItem('camino_profile');
-      const savedLogs = localStorage.getItem('camino_logs');
-      const savedGoals = localStorage.getItem('camino_goals');
+      // 2. Fetch all local storage variables
+      const savedProfileStr = localStorage.getItem('camino_profile');
+      const savedLogsStr = localStorage.getItem('camino_logs');
+      const savedGoalsStr = localStorage.getItem('camino_goals');
 
-      const hasLocalData = savedProfile || (savedLogs && JSON.parse(savedLogs).length > 0) || (savedGoals && JSON.parse(savedGoals).length > 0);
+      const localProfileObj = savedProfileStr ? JSON.parse(savedProfileStr) : null;
+      const localLogsArr = savedLogsStr ? JSON.parse(savedLogsStr) : [];
+      const localGoalsArr = savedGoalsStr ? JSON.parse(savedGoalsStr) : [];
+
+      const hasLocalData = localProfileObj || localLogsArr.length > 0 || localGoalsArr.length > 0;
       const isCloudEmpty = (!profileData) && (!logsData || logsData.length === 0) && (!goalsData || goalsData.length === 0);
-      
+
       if (hasLocalData && isCloudEmpty) {
+        // Cloud is empty, but user has local guest data on device!
+        // Do NOT overwrite local variables in state with empty cloud data, as that wipes them out.
+        // Instead, retain local data and set prompt to sync/migrate them.
+        setProfile(localProfileObj);
+        setLogs(localLogsArr);
+        setGoals(localGoalsArr);
         setShowCloudSyncPrompt(true);
+      } else {
+        // Normal Flow: Cloud has some data, or both sides are empty.
+        // Sync setting state from Cloud (Cloud is the absolute source of truth when populated).
+        if (profileData) {
+          setProfile({
+            nombre: profileData.nombre,
+            club: profileData.club,
+            edad: profileData.edad,
+            peso: profileData.peso,
+            altura: profileData.altura,
+            piernaHabil: profileData.pierna_habil || profileData.piernaHabil,
+            posicion: profileData.posicion,
+            habilidad1: profileData.habilidades?.[0] || 'Velocidad',
+            habilidad2: profileData.habilidades?.[1] || 'Pase',
+            habilidades: profileData.habilidades || []
+          });
+        }
+
+        if (logsData) {
+          setLogs(logsData.map((l: any) => ({
+            id: l.id,
+            tipo: l.tipo,
+            fecha: l.fecha,
+            goles: l.goles || 0,
+            asistencias: l.asistencias || 0,
+            atajadas: l.atajadas || 0,
+            vallaInvicta: !!l.valla_invicta,
+            reflexion: l.reflexion || '',
+            timestamp: l.timestamp || Date.now()
+          })));
+        }
+
+        if (goalsData) {
+          setGoals(goalsData.map((g: any) => ({
+            id: g.id,
+            texto: g.texto,
+            completado: g.completado,
+            plazo: g.plazo
+          })));
+        }
       }
 
       setDbSyncError(null);
