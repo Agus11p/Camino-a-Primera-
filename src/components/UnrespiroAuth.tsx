@@ -14,9 +14,10 @@ import {
 
 interface UnrespiroAuthProps {
   onAuthSuccess: (sessionUser: any, isGuest: boolean) => void;
+  onOpenInfoAndLegal?: (tab: 'about' | 'privacy' | 'contact' | 'guides') => void;
 }
 
-export default function UnrespiroAuth({ onAuthSuccess }: UnrespiroAuthProps) {
+export default function UnrespiroAuth({ onAuthSuccess, onOpenInfoAndLegal }: UnrespiroAuthProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -371,7 +372,40 @@ export default function UnrespiroAuth({ onAuthSuccess }: UnrespiroAuthProps) {
       </div>
 
       {/* Bottom info banner info */}
-      <div className="text-center z-10 font-mono">
+      <div className="text-center z-10 font-mono space-y-2.5">
+        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-[10px] text-neutral-500 font-sans font-semibold">
+          <button 
+            type="button"
+            onClick={() => onOpenInfoAndLegal?.('about')} 
+            className="hover:text-emerald-400 hover:underline transition cursor-pointer"
+          >
+            Acerca de
+          </button>
+          <span className="text-neutral-850 select-none">•</span>
+          <button 
+            type="button"
+            onClick={() => onOpenInfoAndLegal?.('privacy')} 
+            className="hover:text-emerald-400 hover:underline transition cursor-pointer"
+          >
+            Política de Privacidad
+          </button>
+          <span className="text-neutral-850 select-none">•</span>
+          <button 
+            type="button"
+            onClick={() => onOpenInfoAndLegal?.('contact')} 
+            className="hover:text-emerald-400 hover:underline transition cursor-pointer"
+          >
+            Contacto
+          </button>
+          <span className="text-neutral-850 select-none">•</span>
+          <button 
+            type="button"
+            onClick={() => onOpenInfoAndLegal?.('guides')} 
+            className="hover:text-emerald-400 hover:underline transition cursor-pointer"
+          >
+            Guías de Rendimiento
+          </button>
+        </div>
         <p className="text-[10px] text-neutral-600 flex items-center justify-center gap-1.5 uppercase font-semibold">
           <span>Camino a Primera · Base de Datos Activa</span>
         </p>

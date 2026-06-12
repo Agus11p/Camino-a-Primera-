@@ -12,6 +12,7 @@ import ProfileCardView from './components/ProfileCardView';
 import DailyLogModal from './components/DailyLogModal';
 import UnrespiroAuth from './components/UnrespiroAuth';
 import SettingsSection from './components/SettingsSection';
+import InfoAndLegal from './components/InfoAndLegal';
 import { supabase, isSupabaseConfigured } from './lib/supabase';
 import { LanguageCode, getTranslation } from './lib/i18n';
 import { playClickSound, playSuccessSound } from './lib/audio';
@@ -81,6 +82,7 @@ export default function App() {
   const [showCloudSyncPrompt, setShowCloudSyncPrompt] = useState<boolean>(false);
   const [syncingCloud, setSyncingCloud] = useState<boolean>(false);
   const [showSqlHelperModal, setShowSqlHelperModal] = useState<boolean>(false);
+  const [activeLegalTab, setActiveLegalTab] = useState<'about' | 'privacy' | 'contact' | 'guides' | null>(null);
 
   // 1. Core Persistent States
   const [profile, setProfile] = useState<PlayerProfile | null>(() => {
@@ -630,6 +632,10 @@ export default function App() {
             {currentView === 'auth' && (
               <UnrespiroAuth
                 onAuthSuccess={handleAuthSuccess}
+                onOpenInfoAndLegal={(tab) => {
+                  playClickSound();
+                  setActiveLegalTab(tab);
+                }}
               />
             )}
 
@@ -771,6 +777,10 @@ export default function App() {
                         onSoundEnabledChange={(s) => {
                           setSoundEnabled(s);
                           localStorage.setItem('camino_sound_enabled', s ? 'true' : 'false');
+                        }}
+                        onOpenInfoAndLegal={(tab) => {
+                          playClickSound();
+                          setActiveLegalTab(tab);
                         }}
                       />
                     )}
@@ -1060,17 +1070,26 @@ CREATE POLICY "Goals delete policy" ON public.goals FOR DELETE USING (auth.uid()
       {/* 4. Future AdSense Container */}
       <div 
         id="ad-container" 
-        className="fixed bottom-0 left-0 right-0 h-[50px] bg-neutral-900/60 backdrop-blur-md border-t border-white/[0.05] z-50 max-w-2xl mx-auto w-full flex items-center justify-center text-center transition-all px-4"
+        className="fixed bottom-0 left-0 right-0 h-[50px] bg-neutral-900/90 backdrop-blur-md border-t border-white/[0.05] z-50 max-w-2xl mx-auto w-full flex items-center justify-center text-center transition-all px-4 rounded-b-xl"
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-center gap-2.5">
           <span className="text-[9px] font-black tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded font-mono uppercase">
             Anuncio
           </span>
-          <span className="text-[10px] font-bold tracking-widest text-neutral-400 uppercase font-sans">
+          <span className="text-[10px] font-bold tracking-widest text-neutral-450 uppercase font-sans">
             Espacio Publicitario
           </span>
         </div>
       </div>
+
+      {/* 5. Modern AdSense Info and Legal Modal Hub */}
+      {activeLegalTab && (
+        <InfoAndLegal 
+          initialTab={activeLegalTab} 
+          onClose={() => setActiveLegalTab(null)} 
+          language={language}
+        />
+      )}
     </div>
   );
 }

@@ -9,6 +9,10 @@ import {
   ShieldAlert, 
   Layers, 
   Check, 
+  BookOpen,
+  Mail,
+  Shield,
+  Sparkles
 } from 'lucide-react';
 import { PlayerProfile } from '../types';
 import { LanguageCode, getTranslation } from '../lib/i18n';
@@ -22,6 +26,7 @@ interface SettingsSectionProps {
   onLanguageChange: (lang: LanguageCode) => void;
   soundEnabled: boolean;
   onSoundEnabledChange: (enabled: boolean) => void;
+  onOpenInfoAndLegal: (tab: 'about' | 'privacy' | 'contact' | 'guides') => void;
 }
 
 export default function SettingsSection({
@@ -31,7 +36,8 @@ export default function SettingsSection({
   language,
   onLanguageChange,
   soundEnabled,
-  onSoundEnabledChange
+  onSoundEnabledChange,
+  onOpenInfoAndLegal
 }: SettingsSectionProps) {
   const [measurementUnit, setMeasurementUnit] = useState<'Métrico' | 'Imperial'>(() => {
     return (localStorage.getItem('camino_unit') as any) || 'Métrico';
@@ -281,6 +287,58 @@ export default function SettingsSection({
             </div>
           </motion.div>
         )}
+      </motion.div>
+
+      {/* 4.5 Info & Legal Center Card for AdSense compliance */}
+      <motion.div variants={itemVariants} className="glass p-4.5 space-y-3 shadow-xl">
+        <div className="flex items-center gap-2">
+          <Info className="w-4 h-4 text-emerald-400" />
+          <h3 className="text-xs font-black text-white uppercase tracking-wider">
+            Información, Guías & Soporte
+          </h3>
+        </div>
+        <p className="text-[10px] text-neutral-400 leading-relaxed font-light">
+          Consulta nuestras guías científicas sobre rendimiento, lee la política obligatoria de protección de datos personales o contáctanos por email de soporte.
+        </p>
+
+        <div className="grid grid-cols-2 gap-2 pt-1 text-center">
+          <button
+            onClick={() => { clickFeedback(); onOpenInfoAndLegal('guides'); }}
+            className="py-2.5 px-3 bg-white/[0.01] hover:bg-white/[0.03] border border-white/5 hover:border-emerald-500/20 text-neutral-300 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition cursor-pointer flex items-center justify-center gap-1.5"
+          >
+            <BookOpen className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+            Guías Físicas
+          </button>
+          <button
+            onClick={() => { clickFeedback(); onOpenInfoAndLegal('about'); }}
+            className="py-2.5 px-3 bg-white/[0.01] hover:bg-white/[0.03] border border-white/5 hover:border-emerald-500/20 text-neutral-300 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition cursor-pointer flex items-center justify-center gap-1.5"
+          >
+            <Info className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+            Nosotros
+          </button>
+          <button
+            onClick={() => { clickFeedback(); onOpenInfoAndLegal('contact'); }}
+            className="py-2.5 px-3 bg-white/[0.01] hover:bg-white/[0.03] border border-white/5 hover:border-emerald-500/20 text-neutral-300 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition cursor-pointer flex items-center justify-center gap-1.5"
+          >
+            <Mail className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+            Contacto
+          </button>
+          <button
+            onClick={() => { clickFeedback(); onOpenInfoAndLegal('privacy'); }}
+            className="py-2.5 px-3 bg-white/[0.01] hover:bg-white/[0.03] border border-white/5 hover:border-emerald-500/20 text-neutral-300 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition cursor-pointer flex items-center justify-center gap-1.5"
+          >
+            <Shield className="w-3.5 h-3.5 text-rose-450 shrink-0" />
+            Privacidad
+          </button>
+        </div>
+
+        <button
+          onClick={() => { clickFeedback(); onOpenInfoAndLegal('guides'); }}
+          className="w-full py-2.5 px-4 bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-500/20 hover:border-emerald-500/40 text-emerald-400 hover:text-emerald-300 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all cursor-pointer flex items-center justify-center gap-2 mt-2 group active:scale-98"
+        >
+          <Sparkles className="w-3.5 h-3.5 text-emerald-400 group-hover:animate-pulse shrink-0" />
+          <span>¡Más Información & Guías de Rendimiento!</span>
+        </button>
       </motion.div>
 
       {/* 5. Version Info and Credits */}
