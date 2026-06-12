@@ -195,12 +195,13 @@ export default function App() {
 
       if (hasLocalData && isCloudEmpty) {
         // Cloud is empty, but user has local guest data on device!
-        // Do NOT overwrite local variables in state with empty cloud data, as that wipes them out.
-        // Instead, retain local data and set prompt to sync/migrate them.
+        // Load the local variables in state and silently migrate/upload them.
         setProfile(localProfileObj);
         setLogs(localLogsArr);
         setGoals(localGoalsArr);
-        setShowCloudSyncPrompt(true);
+        setTimeout(() => {
+          handleUploadLocalToCloud();
+        }, 100);
       } else {
         // Normal Flow: Cloud has some data, or both sides are empty.
         // Sync setting state from Cloud (Cloud is the absolute source of truth when populated).
@@ -246,7 +247,7 @@ export default function App() {
       setDbSyncError(null);
     } catch (err: any) {
       console.warn('Falló la carga de datos desde Supabase:', err);
-      setDbSyncError(`Error al cargar datos de Base de Datos: ${err.message || err.details || err}`);
+      setDbSyncError('ERROR DE CONEXIÓN CON LA NUBE');
     }
   };
 
@@ -387,7 +388,7 @@ export default function App() {
       await loadUserData();
     } catch (err: any) {
       console.warn('Fallo al migrar datos:', err);
-      setDbSyncError(`No se pudieron subir tus datos: ${err.message || err.details || err}`);
+      setDbSyncError('ERROR EN RESPALDO DE GOLES');
     } finally {
       setSyncingCloud(false);
     }
@@ -414,7 +415,7 @@ export default function App() {
         setDbSyncError(null);
       } catch (err: any) {
         console.warn('No se pudo respaldar el perfil en Supabase:', err);
-        setDbSyncError(`Error al sincronizar perfil: ${err.message || err.details || err}`);
+        setDbSyncError('ERROR DE CONEXIÓN CON LA NUBE');
       }
     }
   };
@@ -462,7 +463,7 @@ export default function App() {
         setDbSyncError(null);
       } catch (err: any) {
         console.warn('No se pudo respaldar el diario en Supabase:', err);
-        setDbSyncError(`Error al respaldar registro (goles/asistencias) en Base de Datos: ${err.message || err.details || err}`);
+        setDbSyncError('ERROR AL GUARDAR REGISTRO');
       }
     }
 
@@ -479,7 +480,7 @@ export default function App() {
         setDbSyncError(null);
       } catch (err: any) {
         console.warn('No se pudo eliminar de Supabase:', err);
-        setDbSyncError(`Error al eliminar registro en Base de Datos: ${err.message || err.details || err}`);
+        setDbSyncError('ERROR AL ELIMINAR REGISTRO');
       }
     }
   };
@@ -511,7 +512,7 @@ export default function App() {
         setDbSyncError(null);
       } catch (err: any) {
         console.warn('No se pudo añadir meta en Supabase:', err);
-        setDbSyncError(`Error al guardar meta en Base de Datos: ${err.message || err.details || err}`);
+        setDbSyncError('ERROR AL GUARDAR META');
       }
     }
   };
@@ -535,7 +536,7 @@ export default function App() {
         setDbSyncError(null);
       } catch (err: any) {
         console.warn('No se pudo guardar estado de meta en Supabase:', err);
-        setDbSyncError(`Error al actualizar meta en Base de Datos: ${err.message || err.details || err}`);
+        setDbSyncError('ERROR AL ACTUALIZAR META');
       }
     }
   };
@@ -549,7 +550,7 @@ export default function App() {
         setDbSyncError(null);
       } catch (err: any) {
         console.warn('No se pudo borrar meta en Supabase:', err);
-        setDbSyncError(`Error al eliminar meta en Base de Datos: ${err.message || err.details || err}`);
+        setDbSyncError('ERROR AL ELIMINAR META');
       }
     }
   };
@@ -670,62 +671,27 @@ export default function App() {
                   </div>
                 )}
 
-                {/* 2. Database Sync Error Banner */}
+                {/* 2. Simple, Non-Intrusive Database Error Notification */}
                 {dbSyncError && (
-                  <div className="bg-rose-500/10 border border-rose-500/25 rounded-2xl p-4 mb-5 text-left animate-fade-in text-xs">
-                    <div className="flex items-start gap-2.5">
-                      <span className="text-rose-400 shrink-0 text-base">⚠️</span>
-                      <div className="space-y-1">
-                        <h5 className="font-bold text-rose-300">Base de Datos Sin Inicializar</h5>
-                        <p className="text-[11px] text-neutral-400 leading-normal">
-                          Tus estadísticas están a salvo en este dispositivo, pero no se guardan en la nube porque falto crear las tablas en tu consola de Supabase.
-                        </p>
-                        <p className="text-[10px] text-rose-300/80 font-mono select-all bg-black/30 p-1.5 rounded border border-rose-500/10 max-h-20 overflow-y-auto">
-                          Detalle técnico: {dbSyncError}
-                        </p>
-                      </div>
+                  <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl p-3 mb-5 text-left animate-fade-in flex items-center justify-between gap-3 text-xs">
+                    <div className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse shrink-0"></span>
+                      <span className="text-[10px] font-black uppercase tracking-wider text-rose-400 font-mono">
+                        {dbSyncError}
+                      </span>
                     </div>
-                    <div className="pt-3 flex items-center gap-2.5">
+                    <div className="flex items-center gap-2">
                       <button
                         onClick={() => setShowSqlHelperModal(true)}
-                        className="px-3 py-1.5 bg-rose-500/20 border border-rose-500/30 text-rose-200 hover:bg-rose-500/30 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all cursor-pointer"
+                        className="text-[10px] font-bold text-rose-300 hover:text-rose-200 uppercase transition px-2 py-0.5 rounded hover:bg-white/5 cursor-pointer animate-pulse"
                       >
-                         ⚙️ Solucionar Ahora (Ver SQL)
+                        Ver SQL
                       </button>
                       <button
                         onClick={() => setDbSyncError(null)}
-                        className="px-3 py-1.5 bg-transparent text-neutral-400 hover:text-white text-[10px] uppercase font-semibold cursor-pointer"
+                        className="text-[10px] font-bold text-neutral-500 hover:text-white uppercase transition px-2 py-0.5 rounded hover:bg-white/5 cursor-pointer"
                       >
-                        Cerrar aviso
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {/* 3. Smart Guest-to-Cloud Account Sync Suggestion */}
-                {showCloudSyncPrompt && (
-                  <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 mb-5 text-left space-y-3 animate-fade-in">
-                    <div>
-                      <h4 className="text-xs font-black text-emerald-400 uppercase tracking-wider font-mono flex items-center gap-1.5">
-                        🔄 ¡Tienes estadísticas locales!
-                      </h4>
-                      <p className="text-[11px] text-neutral-300 mt-1 leading-relaxed">
-                        Detectamos goles y asistencias de tu sesión previa. ¿Quieres migrarlos a tu cuenta de Google en la nube ahora mismo para sincronizar tu celular y PC?
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2.5">
-                      <button
-                        onClick={handleUploadLocalToCloud}
-                        disabled={syncingCloud}
-                        className="px-3.5 py-1.5 bg-emerald-500 hover:bg-emerald-400 disabled:bg-neutral-800 disabled:text-neutral-500 text-neutral-950 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all cursor-pointer"
-                      >
-                        {syncingCloud ? 'Sincronizando...' : 'Sí, Migrar Datos'}
-                      </button>
-                      <button
-                        onClick={() => setShowCloudSyncPrompt(false)}
-                        className="px-3.5 py-1.5 bg-neutral-900 hover:bg-neutral-850 border border-white/5 text-[10px] text-neutral-400 hover:text-white uppercase tracking-wider rounded-lg transition-all cursor-pointer"
-                      >
-                        Preservar Vacío / Descartar
+                        Cerrar
                       </button>
                     </div>
                   </div>
