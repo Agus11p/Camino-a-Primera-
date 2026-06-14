@@ -53,11 +53,33 @@ export default function HomeHub({
   // Safely get the 3 most recent logs
   const lastLogs = logs.slice(0, 3);
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: { staggerChildren: 0.1 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 15 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { type: "spring", stiffness: 100, damping: 15 }
+    }
+  };
+
   return (
-    <div className="space-y-6 text-left pb-16">
+    <motion.div 
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="space-y-6 text-left pb-16"
+    >
       
       {/* Elegant Header Greeting */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/[0.04] pb-5">
+      <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/[0.04] pb-5">
         <div>
           <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400 font-mono">
             {language === 'EN' ? 'Professional Athlete Dashboard' : language === 'PT' ? 'Futebolista Painel de Desempenho' : 'Panel de Desempeño Profesional'}
@@ -72,23 +94,28 @@ export default function HomeHub({
         </div>
 
         {/* Quick action: new entry button */}
-        <button
+        <motion.button
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.98 }}
           onClick={() => {
             triggerClick();
             onOpenRegisterModal();
           }}
-          className="sm:self-center flex items-center justify-center gap-1.5 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl transition cursor-pointer shadow-md shadow-emerald-500/10 shrink-0"
+          className="sm:self-center flex items-center justify-center gap-1.5 px-4 py-2.5 bg-emerald-400 hover:bg-emerald-300 text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl transition cursor-pointer shadow-lg shadow-emerald-500/10 shrink-0"
         >
           <Plus className="w-4 h-4 text-neutral-950 stroke-[3]" />
           {t('hub_log_activity')}
-        </button>
-      </div>
+        </motion.button>
+      </motion.div>
 
       {/* Main Grid: Essential Overview & Active Streak */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
         
         {/* Streak & Active Period card */}
-        <div className="md:col-span-4 bg-gradient-to-br from-neutral-900 to-black border border-white/[0.06] rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden min-h-[180px]">
+        <motion.div 
+          variants={itemVariants} 
+          className="md:col-span-4 bg-gradient-to-br from-neutral-900 to-black border border-white/[0.06] hover:border-emerald-500/20 rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden min-h-[180px] transition-all duration-300"
+        >
           <div className="space-y-1.5 relative z-10">
             <span className="text-[9px] font-black uppercase tracking-widest text-neutral-500 font-mono block">
               {language === 'EN' ? 'Activity Streak' : language === 'PT' ? 'Sequência Ativa' : 'Racha de actividad'}
@@ -114,11 +141,14 @@ export default function HomeHub({
           </div>
 
           {/* Decorative faint glow */}
-          <div className="absolute right-0 bottom-0 w-24 h-24 bg-amber-500/5 rounded-full blur-2xl pointer-events-none" />
-        </div>
+          <div className="absolute right-0 bottom-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none" />
+        </motion.div>
 
         {/* Dynamic Aggregates based on player's declared position */}
-        <div className="md:col-span-8 bg-neutral-900 border border-white/[0.04] rounded-2xl p-5 flex flex-col justify-between min-h-[180px]">
+        <motion.div 
+          variants={itemVariants} 
+          className="md:col-span-8 bg-neutral-900 border border-white/[0.04] hover:border-emerald-500/15 rounded-2xl p-5 flex flex-col justify-between min-h-[180px] transition-all duration-300"
+        >
           <div className="space-y-1 pb-3 border-b border-white/[0.03]">
             <span className="text-[9px] font-black uppercase tracking-widest text-neutral-500 font-mono block">
               {language === 'EN' ? 'Statistics Summary' : language === 'PT' ? 'Métricas de Performance Real' : 'Resumen de Estadísticas Reales'}
@@ -189,12 +219,12 @@ export default function HomeHub({
               {t('hub_go_all_stats')} <ArrowUpRight className="w-3.5 h-3.5" />
             </button>
           </div>
-        </div>
+        </motion.div>
 
       </div>
 
       {/* Recents Entries Panel: Real Diary Insights */}
-      <div className="bg-neutral-900 border border-white/[0.04] rounded-2xl p-5 space-y-4">
+      <motion.div variants={itemVariants} className="bg-neutral-900 border border-white/[0.04] hover:border-emerald-500/10 rounded-2xl p-5 space-y-4 transition-all duration-300">
         <div className="flex items-center justify-between border-b border-white/[0.04] pb-3">
           <div className="flex items-center gap-1.5">
             <Calendar className="w-4 h-4 text-emerald-400" />
@@ -287,18 +317,21 @@ export default function HomeHub({
             </ul>
           </div>
         )}
-      </div>
+      </motion.div>
 
       {/* Modern Quick Direct Shortcuts */}
       <div className="space-y-3.5">
-        <h4 className="text-[10px] font-black text-neutral-500 uppercase tracking-widest font-mono select-none">
+        <motion.h4 variants={itemVariants} className="text-[10px] font-black text-neutral-500 uppercase tracking-widest font-mono select-none">
           {t('hub_shortcuts_title')}
-        </h4>
+        </motion.h4>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           
           {/* Dashboard Stats */}
-          <button
+          <motion.button
+            variants={itemVariants}
+            whileHover={{ y: -3, scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
             onClick={() => {
               triggerClick();
               onNavigateToTab('dashboard');
@@ -321,10 +354,13 @@ export default function HomeHub({
                 ? 'Visualize gráficos analíticos e estatísticas gerais da temporada.' 
                 : 'Visualiza tus gráficos analíticos, evolución acumulativa y promedio de desempeño deportivo.'}
             </p>
-          </button>
+          </motion.button>
 
           {/* Goals management */}
-          <button
+          <motion.button
+            variants={itemVariants}
+            whileHover={{ y: -3, scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
             onClick={() => {
               triggerClick();
               onNavigateToTab('goals');
@@ -347,11 +383,11 @@ export default function HomeHub({
                 ? 'Gerencie seus alvos diários e conquistas técnicas a curto prazo.' 
                 : 'Registra, edita o tacha los objetivos técnicos, tácticos y de fuerza muscular para el próximo ciclo de competencia.'}
             </p>
-          </button>
+          </motion.button>
 
         </div>
       </div>
 
-    </div>
+    </motion.div>
   );
 }

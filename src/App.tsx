@@ -304,6 +304,11 @@ export default function App() {
         ? 'welcome' 
         : 'app';
 
+  // Reset scroll to top on view or tab transition
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }, [activeTab, currentView]);
+
   // 3. Handlers
   const handleAuthSuccess = (sessionUser: any, isGuestMode: boolean) => {
     if (isGuestMode) {
@@ -948,8 +953,15 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 );
 
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Profiles select policy" ON public.profiles;
+DROP POLICY IF EXISTS "Profiles insert policy" ON public.profiles;
+DROP POLICY IF EXISTS "Profiles update policy" ON public.profiles;
+DROP POLICY IF EXISTS "Profiles delete policy" ON public.profiles;
+
 CREATE POLICY "Profiles select policy" ON public.profiles FOR SELECT USING (auth.uid() = id);
-CREATE POLICY "Profiles insert policy" ON public.profiles FOR ALL USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
+CREATE POLICY "Profiles insert policy" ON public.profiles FOR INSERT WITH CHECK (auth.uid() = id);
+CREATE POLICY "Profiles update policy" ON public.profiles FOR UPDATE USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
+CREATE POLICY "Profiles delete policy" ON public.profiles FOR DELETE USING (auth.uid() = id);
 
 --- 2. Historial de Partidos (Goles y Asistencias)
 CREATE TABLE IF NOT EXISTS public.logs (
@@ -1013,8 +1025,15 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 );
 
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Profiles select policy" ON public.profiles;
+DROP POLICY IF EXISTS "Profiles insert policy" ON public.profiles;
+DROP POLICY IF EXISTS "Profiles update policy" ON public.profiles;
+DROP POLICY IF EXISTS "Profiles delete policy" ON public.profiles;
+
 CREATE POLICY "Profiles select policy" ON public.profiles FOR SELECT USING (auth.uid() = id);
-CREATE POLICY "Profiles insert policy" ON public.profiles FOR ALL USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
+CREATE POLICY "Profiles insert policy" ON public.profiles FOR INSERT WITH CHECK (auth.uid() = id);
+CREATE POLICY "Profiles update policy" ON public.profiles FOR UPDATE USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
+CREATE POLICY "Profiles delete policy" ON public.profiles FOR DELETE USING (auth.uid() = id);
 
 CREATE TABLE IF NOT EXISTS public.logs (
   id TEXT PRIMARY KEY,

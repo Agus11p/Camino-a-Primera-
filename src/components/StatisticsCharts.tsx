@@ -253,7 +253,7 @@ export default function StatisticsCharts({ logs, profile }: StatisticsChartsProp
                   <path
                     d={goalsPath}
                     fill="none"
-                    stroke="#10b981"
+                    stroke="#34E0A1"
                     strokeWidth="3.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -283,8 +283,8 @@ export default function StatisticsCharts({ logs, profile }: StatisticsChartsProp
                     <feComposite in="SourceGraphic" in2="blur" operator="over" />
                   </filter>
                   <linearGradient id="goalsGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#10b981" />
-                    <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
+                    <stop offset="0%" stopColor="#34E0A1" />
+                    <stop offset="100%" stopColor="#34E0A1" stopOpacity="0" />
                   </linearGradient>
                   <linearGradient id="assistsGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#f59e0b" />
@@ -299,7 +299,7 @@ export default function StatisticsCharts({ logs, profile }: StatisticsChartsProp
                       cx={pt.x}
                       cy={pt.y}
                       r="6"
-                      fill="#10b981"
+                      fill="#34E0A1"
                       stroke="#0f0f11"
                       strokeWidth="2.5"
                     />

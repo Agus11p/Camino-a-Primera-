@@ -162,10 +162,10 @@ export default function UnrespiroAuth({ onAuthSuccess, onOpenInfoAndLegal }: Unr
   };
 
   return (
-    <div className="min-h-screen bg-[#070908] text-neutral-200 flex flex-col justify-between px-6 py-10 font-sans relative overflow-hidden">
+    <div className="min-h-screen bg-black text-neutral-200 flex flex-col justify-between px-6 py-10 font-sans relative overflow-hidden">
       {/* Visual Organic Background Gradient Bloom */}
-      <div className="absolute top-[-10%] left-[-20%] w-[80%] h-[60%] bg-emerald-950/25 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-20%] w-[80%] h-[60%] bg-amber-950/15 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-[-10%] left-[-20%] w-[80%] h-[60%] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-20%] w-[80%] h-[60%] bg-emerald-500/5 rounded-full blur-[120px] pointer-events-none" />
 
       {/* Top minimalistic header */}
       <div className="w-full flex items-center justify-between z-10">
@@ -228,7 +228,7 @@ export default function UnrespiroAuth({ onAuthSuccess, onOpenInfoAndLegal }: Unr
         </AnimatePresence>
 
         {/* Clean Login Options Container */}
-        <div className="bg-[#111312]/80 border border-white/5 rounded-3xl p-5 sm:p-6 shadow-2xl backdrop-blur-md space-y-5">
+        <div className="bg-neutral-900/60 border border-white/5 rounded-3xl p-5 sm:p-6 shadow-2xl backdrop-blur-md space-y-5">
           
           {/* Quick tab switchers */}
           <div className="grid grid-cols-3 gap-1 bg-white/[0.02] p-1 rounded-xl border border-white/[0.04]">
