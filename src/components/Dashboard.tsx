@@ -19,7 +19,8 @@ import {
   BookOpen,
   AreaChart,
   Sliders,
-  Settings
+  Settings,
+  X
 } from 'lucide-react';
 
 interface DashboardProps {
@@ -75,6 +76,13 @@ export default function Dashboard({
   const streak = calculateStreak(logs);
   const unlockedBadges = calculateBadges(logs);
 
+  // Milestone tracking attributes
+  const matches = logs.filter((log) => log.tipo === 'Partido');
+  const bestGoals = matches.length > 0 ? Math.max(...matches.map(m => m.goles || 0), 0) : 0;
+  const bestAssists = matches.length > 0 ? Math.max(...matches.map(m => m.asistencias || 0), 0) : 0;
+  const bestSaves = matches.length > 0 ? Math.max(...matches.map(m => m.atajadas || 0), 0) : 0;
+  const hasSocioIdeal = matches.some(m => (m.goles || 0) >= 1 && (m.asistencias || 0) >= 1);
+
   // Real-time BMI Calculation
   const alturaM = profile.altura / 100;
   const imc = parseFloat((profile.peso / (alturaM * alturaM)).toFixed(1));
@@ -127,7 +135,6 @@ export default function Dashboard({
   const assistsOffset = strokeDash - (assistsPct / 100) * strokeDash;
 
   // Chart preparation logic
-  const matches = logs.filter((log) => log.tipo === 'Partido');
   const totalPartidosHistorico = matches.length;
   const promedioGoles = totalPartidosHistorico > 0 ? parseFloat((totalGoles / totalPartidosHistorico).toFixed(2)) : 0;
   const promedioAsistencias = totalPartidosHistorico > 0 ? parseFloat((totalAsistencias / totalPartidosHistorico).toFixed(2)) : 0;
@@ -227,7 +234,7 @@ export default function Dashboard({
         animate="visible"
         className="space-y-5 pb-24"
       >
-        {/* COMPACT SCOUT FICHA (Top Header summary to replace standalone view) */}
+        {/* COMPACT SCOUT FICHA (Top Header summary) */}
         <motion.div 
           variants={itemVariants}
           className="relative overflow-hidden bg-neutral-900 border border-neutral-800 rounded-2xl p-4.5 shadow-xl transition-all duration-300"
@@ -747,8 +754,8 @@ export default function Dashboard({
       {/* 2. Modals / Bottom Sheets for Edit Goal Targets */}
       {/* Goals Target Modal */}
       {showGoalsModal && (
-        <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="w-full sm:max-w-md glass p-6 shadow-2xl relative border border-white/10 rounded-t-2xl sm:rounded-2xl">
+        <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="w-full sm:max-w-md glass p-6 shadow-2xl relative border border-white/10 rounded-2xl">
             <h3 className="text-base font-black text-white uppercase tracking-tight mb-1 text-left">
               {isArquero ? 'Modificar Meta de Atajadas' : 'Modificar Meta de Goles'}
             </h3>
@@ -796,8 +803,8 @@ export default function Dashboard({
 
       {/* Assists Target Modal */}
       {showAssistsModal && (
-        <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="w-full sm:max-w-md glass p-6 shadow-2xl relative border border-white/10 rounded-t-2xl sm:rounded-2xl">
+        <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="w-full sm:max-w-md glass p-6 shadow-2xl relative border border-white/10 rounded-2xl">
             <h3 className="text-base font-black text-white uppercase tracking-tight mb-1 text-left">
               {isArquero ? 'Modificar Meta de Arcos en Cero' : 'Modificar Meta de Asistencias'}
             </h3>

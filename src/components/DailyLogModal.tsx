@@ -79,8 +79,8 @@ export default function DailyLogModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto">
-      <div className="w-full sm:max-w-lg glass shadow-2xl overflow-hidden self-end sm:self-auto relative max-h-[92vh] flex flex-col">
+    <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto">
+      <div className="w-full sm:max-w-lg glass shadow-2xl overflow-hidden self-center relative max-h-[90vh] flex flex-col rounded-2xl">
         {/* Header bar */}
         <div className="px-5 py-4.5 border-b border-white/10 flex items-center justify-between bg-white/5 backdrop-blur-md sticky top-0 z-10">
           <div>
